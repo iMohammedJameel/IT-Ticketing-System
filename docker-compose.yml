@@ -1,0 +1,123 @@
+# docker-compose for the IT Ticketing System.
+#
+# Three services:
+#   - mongo: MongoDB 7 with WiredTiger + auth enabled
+#   - backend: Express API + WebSocket + SLA monitor
+#   - frontend: nginx serving the built SPA, proxying /api and /socket.io
+#
+# Usage:
+#   1. Copy .env.example → .env and edit the values
+#   2. docker compose up -d
+#   3. docker compose exec backend npm run seed
+#   4. (For HTTPS) put deploy/nginx/it-ticketing.conf on the host nginx
+#
+# Volumes:
+#   - mongo_data: MongoDB data (persists across container restarts)
+#   - backend_uploads: uploaded attachment files
+
+version: "3.9"
+
+services:
+  # ---------- MongoDB ----------
+  mongo:
+    image: mongo:7-jammy
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-it_admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-change_me_in_production}
+      MONGO_INITDB_DATABASE: it-ticketing
+    volumes:
+      - mongo_data:/data/db
+    # Don't expose the port to the host — only the backend container needs it
+    expose:
+      - "27017"
+    healthcheck:
+      test: |
+        mongosh --quiet --eval "db.adminCommand('ping').ok" |
+        grep -q "1"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - it_net
+
+  # ---------- Backend (Express + Socket.io) ----------
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      # Use the mongo service hostname + the root credentials from above
+      DB_URL: mongodb://${MONGO_USER:-it_admin}:${MONGO_PASSWORD:-change_me_in_production}@mongo:27017/it-ticketing?authSource=admin
+      JWT_SECRET: ${JWT_SECRET:-change_me_to_a_long_random_string_min_32_chars}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change_me_to_another_long_random_string}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080,https://it-ticketing.example.com}
+      BCRYPT_SALT_ROUNDS: "12"
+      RATE_LIMIT_WINDOW_MS: "900000"
+      RATE_LIMIT_MAX: "1000"
+      CLIENT_URL: ${CLIENT_URL:-https://it-ticketing.example.com}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin@1234}
+      # Email (optional — leave blank to use stream transport in dev)
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-IT Ticketing <no-reply@example.com>}
+    volumes:
+      - backend_uploads:/app/uploads
+    expose:
+      - "5000"
+    # Only expose to the host if you want direct access (e.g. for debugging).
+    # In production, the frontend container or a reverse proxy handles traffic.
+    ports:
+      - "5000:5000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - it_net
+
+  # ---------- Frontend (nginx + SPA) ----------
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    # Expose on host port 8080 — the host nginx reverse-proxy terminates SSL
+    # and forwards to this port.
+    ports:
+      - "8080:80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - it_net
+
+volumes:
+  mongo_data:
+    driver: local
+  backend_uploads:
+    driver: local
+
+networks:
+  it_net:
+    driver: bridge

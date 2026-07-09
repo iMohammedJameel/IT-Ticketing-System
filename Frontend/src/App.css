@@ -1,0 +1,8 @@
+main {
+  background: linear-gradient(135deg, #f5f5fb 0%, #ede8f5 50%, #e8e0f5 100%);
+  min-height: calc(100vh - 65px);
+}
+
+section {
+  background: transparent;
+}

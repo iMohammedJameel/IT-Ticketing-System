@@ -1,0 +1,171 @@
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+.cardTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  color: var(--text-dark);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.cardTitle i { color: var(--primary); }
+
+.lastTicketsCard {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 264px);
+  overflow: hidden;
+}
+
+.lastTicketsCard .ticketList {
+  flex: 1;
+  overflow-y: auto;
+  max-height: unset;
+}
+
+.ticketItem {
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.ticketItem:last-child { border-bottom: none; }
+
+.ticketTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.statusBadge {
+  padding: 0.18rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: white;
+}
+.statusBadge.ping { background: var(--danger); }
+.statusBadge.inProgress { background: var(--orange); }
+.statusBadge.done { background: var(--success); }
+.statusBadge.invalid { background: #999; }
+
+.ticketId { font-size: 0.75rem; color: #aaa; font-weight: 600; font-family: monospace; }
+
+.ticketBody {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.4rem;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f5a623, #e85d04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.clientIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg-input);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.ticketName { font-weight: 600; color: var(--text-dark); font-size: 0.875rem; }
+.ticketDesc {
+  color: #888;
+  font-size: 0.75rem;
+  margin-top: 0.1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+.ticketDate { display: flex; align-items: center; gap: 0.4rem; color: #aaa; font-size: 0.72rem; }
+
+.listRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+.listRow:last-child { border-bottom: none; }
+.listName { flex: 1; font-size: 0.875rem; color: var(--text-dark); font-weight: 500; }
+.listCount { font-weight: 700; color: var(--text-dark); font-size: 0.875rem; min-width: 35px; text-align: center; }
+
+.showAllBtn {
+  font-size: 0.875rem;
+  padding: 0.5rem 1.5rem;
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: white !important;
+  border-radius: var(--radius-sm) !important;
+  font-weight: 600;
+  width: 100%;
+  margin-top: 1rem;
+}
+.showAllBtn:hover { background: var(--primary-light) !important; }
+
+/* ===== Responsive ===== */
+@media (max-width: 1390px) {
+  .employeeClientCol {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 992px) {
+  .ticketDesc { max-width: 180px; }
+}
+
+@media (max-width: 768px) {
+  .card { padding: 1rem; }
+  .cardTitle { font-size: 0.9rem; margin-bottom: 1rem; }
+  .ticketDesc { max-width: 140px; }
+  .statValue { font-size: 1.5rem !important; }
+  .ticketList { max-height: 320px; }
+}
+
+@media (max-width: 576px) {
+  .card { padding: 0.85rem; border-radius: var(--radius-sm); }
+  .cardTitle { font-size: 0.85rem; }
+  .ticketDesc { max-width: 160px; }
+  .ticketName { font-size: 0.82rem; }
+  .listName { font-size: 0.82rem; }
+  .statusBadge { font-size: 0.62rem; padding: 0.14rem 0.45rem; }
+  .avatar { width: 30px; height: 30px; font-size: 0.7rem; }
+  .clientIcon { width: 30px; height: 30px; font-size: 0.75rem; }
+  .ticketList { max-height: 280px; }
+}
+
+@media (max-width: 400px) {
+  .ticketDesc { max-width: 110px; }
+  .statValue { font-size: 1.25rem !important; }
+}

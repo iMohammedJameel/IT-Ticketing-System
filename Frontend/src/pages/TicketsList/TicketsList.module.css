@@ -1,0 +1,259 @@
+.tabBar {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.tabBar span { color: var(--primary); font-weight: 700; font-size: 1.05rem; }
+.tabBar i { color: var(--primary); }
+
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.card table {
+  min-width: 750px;
+}
+
+.selectedRow {
+  background: rgba(74, 78, 140, 0.05) !important;
+}
+
+.bulkBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  flex-wrap: wrap;
+}
+
+.bulkBar span {
+  font-size: 0.9rem;
+  color: var(--text-dark);
+}
+
+.categoryBadge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  text-transform: capitalize;
+}
+
+.priorityBadge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.statusBadge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  text-transform: capitalize;
+}
+
+.slaOk {
+  color: var(--success);
+  font-size: 0.75rem;
+}
+
+.slaOverdue {
+  color: var(--danger);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.slaBreachedBadge {
+  color: var(--danger);
+  margin-left: 4px;
+}
+
+.pagination {
+  border-top: 1px solid var(--border);
+  background: var(--bg-card);
+}
+
+/* Modal content styles */
+.adminControls {
+  background: var(--bg-input);
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  margin-top: 16px;
+}
+
+.adminControls h6 {
+  color: var(--primary);
+}
+
+.commentsList {
+  max-height: 320px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px;
+}
+
+.commentItem {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+}
+
+.commentAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.commentAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.commentContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.commentAuthor {
+  color: var(--text-dark);
+  font-size: 0.85rem;
+}
+
+.adminBadge {
+  background: var(--primary);
+  color: white;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+}
+
+.commentTime {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+}
+
+.commentText {
+  color: var(--text-dark);
+  font-size: 0.875rem;
+  margin: 4px 0 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.commentInput {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.historyList {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.historyItem {
+  display: flex;
+  gap: 12px;
+  padding: 8px 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  position: relative;
+  padding-left: 16px;
+  border-left: 2px solid var(--border);
+  margin-left: 4px;
+}
+
+.historyDot {
+  position: absolute;
+  left: -6px;
+  top: 12px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 2px solid var(--bg-card);
+}
+
+.historyItem code {
+  background: var(--bg-input);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: var(--text-dark);
+}
+
+.attachmentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.attachmentItem {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+}
+
+.attachmentLink {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.attachmentLink:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .bulkBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .bulkBar .form-select {
+    width: 100% !important;
+  }
+}
