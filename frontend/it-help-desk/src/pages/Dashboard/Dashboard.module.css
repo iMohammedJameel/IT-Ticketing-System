@@ -1,0 +1,142 @@
+/*! Jameel IT — Help Desk & Ticketing Platform · © 2026 Mohammed Jameel
+ * https://imohammedjameel.github.io/ · MIT License · Signature: JMLIT-4FC9A6FEFD
+ * Attribution notice — keep intact when copying/modifying (see LICENSE + NOTICE) */
+/* App shell — the content side (right of the sidebar in LTR).
+   Background fidelity to the approved 1536×1024 reference:
+   · page bg = subtle vertical gradient measured off the reference's
+     right-edge column profile (#F2F3FC top → #F0F0FB mid → #EDEEFB bottom)
+   · two extracted reference artworks live on a bottom layer:
+     - header watermark strip (circuit traces + Eye of Horus), natural
+       1298×170 size, anchored to the far corner so the eye always hugs
+       the viewport edge exactly like the reference
+     - Egyptian skyline (pyramids/palms/minaret), 22.7% of content width,
+       starting 57.2% across — pixel-exact at the reference viewport and
+       proportionally placed at any other width
+   · real content (navbar/banner/main/footer) sits ABOVE the art via the
+     .rightSide > * rule; the navbar is frosted so the traces show through
+     at rest while scrolled content blurs under it
+   RTL: logical anchors mirror the composition (eye/skyline flip sides);
+   the artwork itself stays unmirrored — same rule as the login bg and the
+   sidebar pyramids. Dark mode hides the art and falls back to a flat bg. */
+
+.appLayout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.rightSide {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  background: linear-gradient(180deg, #F2F3FC 0%, #F0F0FB 50%, #EDEEFB 100%);
+}
+
+/* Every shell child paints above the .bgArt layer (z-index 0).
+   MUST stay ABOVE this rule in file order so the mobile drawer overlay
+   (position:fixed, z-index 200, in the media query below) still wins. */
+.rightSide > * {
+  position: relative;
+  z-index: 1;
+}
+
+.main {
+  flex: 1;
+  min-height: 0; /* flex child must shrink — legacy App.css once forced 100vh-65px here and pushed the footer off-screen */
+  background: transparent;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Scroll etiquette for the transparent navbar: content dissolves to
+     nothing over the first 34px so it never visually collides with the
+     navbar controls — a fade instead of a frosted tint keeps the reference
+     circuit traces at full strength behind the navbar. */
+  -webkit-mask-image: linear-gradient(180deg, transparent 0px, #000 34px);
+  mask-image: linear-gradient(180deg, transparent 0px, #000 34px);
+}
+
+/* ── Background decoration layer (reference artwork) ── */
+.bgArt {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bgWatermark {
+  position: absolute;
+  top: 0;
+  inset-inline-end: 0; /* far corner: right in LTR, left in RTL (mirrored) */
+  width: 1298px; /* natural reference size — never stretched, clips left on narrow */
+  height: 170px;
+  object-fit: none;
+  user-select: none;
+  opacity: 0.85; /* reference keeps the eye/traces a touch fainter than the raw extraction */
+}
+
+.bgSkyline {
+  position: absolute;
+  bottom: 0;
+  inset-inline-start: 57.2%; /* reference: art spans 57.2%–79.9% of content width */
+  width: 22.7%;
+  height: auto;
+  user-select: none;
+}
+
+/* ── Floating Arabic greeting (reference top-right zone) ──
+   "مرحباً... / نحن هنا لمساعدتك" — measured at reference x1114-1199 y100-143:
+   slate-navy #223364 Cairo 14px/21px, right-aligned, gold #E1AE51 underline
+   under the last word. Sits INSIDE the art layer (behind content) so pages
+   whose own headers occupy that zone simply draw over it — on the dashboard
+   the zone is open and the greeting shows exactly like the reference.
+   Same Arabic string in BOTH languages — the reference's EN layout carries
+   the Arabic accent too (same rule as the login brand art). */
+.bgGreeting {
+  position: absolute;
+  top: 100px;
+  inset-inline-end: 26%; /* block's end edge at 74% across — resolves against the APP direction, so it mirrors in RTL. The inner <p dir="rtl"> keeps the Arabic text flowing correctly without flipping this anchor. */
+  width: max-content;
+  font-family: 'Cairo', 'Poppins', sans-serif;
+  font-size: 14px;
+  line-height: 21px;
+  font-weight: 600;
+  color: #223364;
+}
+
+.greetLine {
+  margin: 0;
+}
+
+.greetAccent {
+  border-bottom: 2px solid #e1ae51;
+  padding-bottom: 2px;
+}
+
+/* Dark theme: artwork is light-on-light — hide it, flat dark bg instead */
+[data-theme="dark"] .rightSide {
+  background: var(--bg-base);
+}
+[data-theme="dark"] .bgArt {
+  display: none;
+}
+
+.overlay {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .bgArt {
+    display: none; /* reference is desktop-only; decorations would be noise on phones */
+  }
+  .overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 200;
+  }
+}

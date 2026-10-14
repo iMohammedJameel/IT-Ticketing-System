@@ -1,0 +1,43 @@
+/*! Jameel IT — Help Desk & Ticketing Platform · © 2026 Mohammed Jameel
+ * https://imohammedjameel.github.io/ · MIT License · Signature: JMLIT-4FC9A6FEFD
+ * Attribution notice — keep intact when copying/modifying (see LICENSE + NOTICE) */
+/* MFA panel extras — QR frame + copy affordances on codes/secrets */
+
+.qrImg {
+  background: #ffffff; /* QR modules need a light backing in dark mode */
+  image-rendering: pixelated;
+  padding: 4px;
+}
+
+.copyBtn {
+  --bs-btn-font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.manualSecret {
+  max-width: 100%;
+}
+
+.recoveryCode {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border, #dee2e6);
+  border-radius: 8px;
+  padding: 4px 8px;
+}
+
+.recoveryCode code {
+  font-size: 0.85rem;
+}
+
+.copyBtnSmall {
+  background: none;
+  border: none;
+  color: var(--text-secondary, #6c757d);
+  padding: 0 2px;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.copyBtnSmall:hover {
+  color: var(--primary, #6c3dd6);
+}

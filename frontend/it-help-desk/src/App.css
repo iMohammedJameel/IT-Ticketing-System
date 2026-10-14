@@ -1,0 +1,17 @@
+/*! Jameel IT — Help Desk & Ticketing Platform · © 2026 Mohammed Jameel
+ * https://imohammedjameel.github.io/ · MIT License · Signature: JMLIT-4FC9A6FEFD
+ * Attribution notice — keep intact when copying/modifying (see LICENSE + NOTICE) */
+/* Legacy global rules — intentionally neutralized.
+   The app shell's single <main> (.app-main, styled in
+   pages/Dashboard/Dashboard.module.css) owns its background and height now.
+   The old rules here (135deg lavender gradient + min-height:
+   calc(100vh - 65px)) fought the approved reference background layer and
+   pushed the footer below the fold — the shell is a 100vh flex column,
+   so main must be allowed to shrink (min-height: 0). */
+main {
+  min-height: 0;
+}
+
+section {
+  background: transparent;
+}

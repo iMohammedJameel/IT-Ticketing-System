@@ -1,0 +1,134 @@
+/*! Jameel IT — Help Desk & Ticketing Platform · © 2026 Mohammed Jameel
+ * https://imohammedjameel.github.io/ · MIT License · Signature: JMLIT-4FC9A6FEFD
+ * Attribution notice — keep intact when copying/modifying (see LICENSE + NOTICE) */
+/* KB article detail page — matches the card/tabBar design language */
+
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 2rem 2.25rem;
+  max-width: 860px;
+}
+
+.backLink {
+  color: var(--text-secondary);
+  border-color: var(--border);
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.categoryBadge {
+  display: inline-block;
+  padding: 3px 10px;
+  background: var(--bg-input);
+  color: var(--text-dark);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.tagChip {
+  display: inline-block;
+  padding: 2px 8px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  font-size: 0.7rem;
+}
+
+.title {
+  color: var(--text-dark);
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.35;
+  margin-bottom: 8px;
+}
+
+.meta {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  margin-bottom: 0;
+}
+
+.metaSep {
+  margin-inline: 6px;
+  opacity: 0.6;
+}
+
+.header {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.25rem;
+}
+
+/* Plain-text article body — preserve the author's paragraphs/line breaks */
+.body {
+  color: var(--text-dark);
+  font-size: 1rem;
+  line-height: 1.9;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  margin-bottom: 1.5rem;
+}
+
+.voteFooter {
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.voteGroup {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.voteBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.voteCount {
+  background: var(--bg-input);
+  border-radius: 10px;
+  padding: 0 8px;
+  font-weight: 700;
+  font-size: 0.78rem;
+  min-width: 1.6em;
+  text-align: center;
+}
+
+.votedBtn {
+  opacity: 1;
+}
+
+.votedNote {
+  color: var(--success, #198754);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+@media (max-width: 576px) {
+  .card {
+    padding: 1.4rem 1.1rem;
+  }
+
+  .voteFooter {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

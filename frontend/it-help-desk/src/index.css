@@ -1,0 +1,796 @@
+/*! Jameel IT — Help Desk & Ticketing Platform · © 2026 Mohammed Jameel
+ * https://imohammedjameel.github.io/ · MIT License · Signature: JMLIT-4FC9A6FEFD
+ * Attribution notice — keep intact when copying/modifying (see LICENSE + NOTICE) */
+/* =====================================================================
+   Design foundation — tokens, themes, RTL, typography, print.
+   Single source of truth for colors: the CSS variables below are mirrored
+   by src/pages/TicketsList/ticketConstants.js (which reads the same hex
+   values via var(--status-*) inline styles). Change them HERE, once.
+   ===================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Cairo:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Latin font (Arabic switches to Cairo below via [dir="rtl"]) */
+  font-family: 'Poppins', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+
+  /* Brand */
+  --primary: #23256b;
+  --primary-light: #3d3e9c;
+  --orange: #f2994a;
+  --orange-dark: #e08838;
+  --danger: #eb5757;
+  --success: #27ae60;
+  --teal: #20c997;
+
+  /* Semantic status colors — the ONE palette every screen reads from */
+  --status-open: #ef4444;
+  --status-progress: #f97316;
+  --status-resolved: #22c55e;
+  --status-closed: #9ca3af;
+  --prio-low: #22c55e;
+  --prio-medium: #f59e0b;
+  --prio-high: #f97316;
+  --prio-urgent: #ef4444;
+
+  /* Surfaces — page bg measured from the approved 1536×1024 reference:
+     cool lavender-blue #F0F0FB (content area right-edge median), NOT the old
+     warm #EEEAF6. The app shell draws the subtle reference vertical gradient
+     (see Dashboard.module.css .rightSide); flat tokens stay the fallback. */
+  --bg-base: #F0F0FB;
+  --bg-page: #F0F0FB;
+  --bg-card: #ffffff;
+  --bg-sidebar: #FFFFFF;
+  --bg-input: #f0f0f6;
+
+  /* Text — muted passes WCAG AA (≥4.5:1) on white */
+  --text-dark: #1b1b3a;
+  --text-primary: #23256b;
+  --text-secondary: #555577;
+  --text-muted: #6a6a8f;
+
+  --border: #e2e4f0;
+  --shadow: 0 4px 15px rgba(35, 37, 107, 0.05);
+  --shadow-md: 0 8px 25px rgba(35, 37, 107, 0.1);
+
+  --radius: 12px;
+  --radius-sm: 8px;
+
+  /* Typography scale */
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-base: 1rem;
+  --fs-lg: 1.25rem;
+  --fs-xl: 1.75rem;
+  --fs-2xl: 2.25rem;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  /* Old vars compatibility */
+  --main-color: #23256b;
+  --hover-color: #3d3e9c;
+  --whit-color: #ffffff;
+  --text-color: #1b1b3a;
+  --border-color: #e2e4f0;
+  --bg-light: #F0F0FB;
+}
+
+/* Arabic UI — Cairo renders both Arabic + Latin harmoniously */
+[dir="rtl"] {
+  font-family: 'Cairo', 'Poppins', sans-serif;
+}
+[dir="rtl"] body { font-family: 'Cairo', 'Poppins', sans-serif; }
+[dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3, [dir="rtl"] h4, [dir="rtl"] h5, [dir="rtl"] h6 {
+  font-family: 'Cairo', 'Poppins', sans-serif;
+  line-height: 1.6; /* Arabic needs taller line-height for diacritics */
+}
+
+/* ===== Dark theme overrides ===== */
+[data-theme="dark"] {
+  --primary: #4f52bf;
+  --primary-light: #6366d6;
+  --orange: #f2994a;
+  --orange-dark: #e08838;
+  --danger: #eb5757;
+  --success: #27ae60;
+  --teal: #20c997;
+
+  --status-open: #f87171;
+  --status-progress: #fb923c;
+  --status-resolved: #4ade80;
+  --status-closed: #b6bcc8;
+  --prio-low: #4ade80;
+  --prio-medium: #fbbf24;
+  --prio-high: #fb923c;
+  --prio-urgent: #f87171;
+
+  --bg-base: #0f1020;
+  --bg-page: #0f1020;
+  --bg-card: #1a1b3a;
+  --bg-sidebar: #161730;
+  --bg-input: #23254d;
+
+  --text-dark: #f5f5ff;
+  --text-primary: #8183e2;
+  --text-secondary: #c0c3ea;
+  --text-muted: #a0a2d0;
+
+  --border: #292a4e;
+  /* Softer than the old 0.4/0.5 — dark surfaces separate via borders first */
+  --shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 8px 25px rgba(0, 0, 0, 0.28);
+
+  color-scheme: dark;
+}
+
+/* ===== Keyboard focus ring — visible for keyboard users only ===== */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+[data-theme="dark"] :focus-visible { outline-color: var(--primary-light); }
+
+/* ===== Status / priority helpers (used across all screens) ===== */
+.trend-up { color: var(--status-resolved); font-weight: var(--fw-semibold); }
+.trend-down { color: var(--status-open); font-weight: var(--fw-semibold); }
+.trend-flat { color: var(--text-muted); font-weight: var(--fw-medium); }
+
+/* Presence — green "online" dot next to agents */
+.presence-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #adb0c5;
+  flex-shrink: 0;
+}
+.presence-dot.online {
+  background: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+}
+
+/* ===== Table styling for light and dark modes ===== */
+.table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--text-dark);
+  --bs-table-hover-bg: rgba(156, 158, 232, 0.08);
+  --bs-table-hover-color: var(--text-dark);
+  color: var(--text-dark);
+}
+
+.table th,
+.table td {
+  background-color: transparent !important;
+  color: var(--text-dark) !important;
+  border-color: var(--border) !important;
+  vertical-align: middle;
+}
+
+.table thead th {
+  background-color: var(--bg-input) !important;
+  color: var(--text-dark) !important;
+  font-weight: 700;
+}
+
+.table tbody tr {
+  background-color: var(--bg-card) !important;
+  transition: background-color 0.15s ease;
+}
+
+.table-hover tbody tr:hover,
+.table-hover tbody tr:hover > td,
+.table-hover tbody tr:hover > th,
+.table-hover > tbody > tr:hover > * {
+  background-color: rgba(156, 158, 232, 0.06) !important;
+  color: var(--text-dark) !important;
+}
+
+[data-theme="dark"] .table-hover tbody tr:hover,
+[data-theme="dark"] .table-hover tbody tr:hover > td,
+[data-theme="dark"] .table-hover tbody tr:hover > th,
+[data-theme="dark"] .table-hover > tbody > tr:hover > * {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  color: var(--text-dark) !important;
+}
+
+.table tr.selectedRow,
+.table tr.selectedRow > td,
+.table tr.selectedRow > th,
+.table > tbody > tr.selectedRow > * {
+  background-color: rgba(156, 158, 232, 0.22) !important;
+  color: var(--text-dark) !important;
+}
+
+.table .text-muted {
+  color: var(--text-secondary) !important;
+}
+
+/* Clickable rows announce themselves to keyboard users */
+.table tbody tr[tabindex="0"] { cursor: pointer; }
+.table tbody tr[tabindex="0"]:hover { outline: 1px solid rgba(129, 131, 226, 0.35); outline-offset: -1px; }
+
+/* =====================================================================
+   Mobile card view — <table class="table-cards"> collapses into stacked
+   cards below 768px. Cells carry data-label="…" for the inline caption.
+   ===================================================================== */
+@media (max-width: 768px) {
+  .table-cards thead { display: none; }
+  /* min-width:0 kills the desktop `.card table { min-width: 750px }` hint:
+     without it the stacked cards stay 750px wide and the WHOLE PAGE becomes
+     horizontally draggable on phones (verified: html.scrollWidth 717 → 375). */
+  .table-cards,
+  .table-cards tbody,
+  .table-cards tr,
+  .table-cards td {
+    display: block;
+    width: 100%;
+    min-width: 0 !important;
+    border: none !important;
+  }
+  .table-cards tr {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius);
+    margin-bottom: 0.75rem;
+    padding: 0.4rem 0.2rem;
+    box-shadow: var(--shadow);
+  }
+  .table-cards td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.45rem 0.85rem;
+    text-align: end;
+  }
+  .table-cards td::before {
+    content: attr(data-label);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
+    color: var(--text-secondary);
+    text-align: start;
+    flex-shrink: 0;
+  }
+  .table-cards td.no-label::before { content: none; }
+  .table-cards td.no-label { justify-content: flex-end; }
+}
+
+/* ===== Forms (light + dark) ===== */
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select {
+  background: var(--bg-input);
+  border-color: var(--border);
+  color: var(--text-dark);
+}
+[data-theme="dark"] .form-control:focus,
+[data-theme="dark"] .form-select:focus {
+  background: var(--bg-input);
+  border-color: var(--primary);
+  color: var(--text-dark);
+}
+[data-theme="dark"] .accordion-item { background: var(--bg-card); }
+[data-theme="dark"] .accordion-body { background: var(--bg-card); color: var(--text-secondary); }
+[data-theme="dark"] .btn-outline-primary {
+  background: var(--bg-input) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+}
+[data-theme="dark"] .btn-outline-primary:hover {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #ffffff !important;
+}
+[data-theme="dark"] .btn-outline-secondary {
+  background: var(--bg-input) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+}
+[data-theme="dark"] .btn-outline-secondary:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .badge.bg-secondary {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+}
+
+/* ===== Nav tabs styling for light and dark modes ===== */
+.nav-tabs {
+  border-bottom-color: var(--border) !important;
+}
+
+.nav-tabs .nav-link {
+  color: var(--text-secondary) !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.6rem 1.2rem;
+  transition: all 0.2s ease;
+  background: transparent !important;
+}
+
+.nav-tabs .nav-link:hover {
+  color: var(--primary) !important;
+  border-bottom-color: rgba(129, 131, 226, 0.4) !important;
+}
+
+.nav-tabs .nav-link.active {
+  color: var(--primary) !important;
+  border-bottom: 2px solid var(--orange, #f2994a) !important;
+  background: transparent !important;
+  font-weight: 700;
+}
+
+[data-theme="dark"] .nav-tabs .nav-link {
+  color: #c0c3ea !important;
+}
+
+[data-theme="dark"] .nav-tabs .nav-link:hover {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .nav-tabs .nav-link.active {
+  color: #9c9ee8 !important;
+  border-bottom-color: var(--orange, #f2994a) !important;
+}
+
+/* ===== Skeleton loader animation ===== */
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg,
+    var(--bg-input) 25%,
+    rgba(0, 0, 0, 0.06) 37%,
+    var(--bg-input) 63%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.4s ease infinite;
+}
+[data-theme="dark"] .skeleton {
+  background: linear-gradient(90deg,
+    var(--bg-input) 25%,
+    rgba(255, 255, 255, 0.04) 37%,
+    var(--bg-input) 63%
+  );
+  background-size: 400% 100%;
+}
+
+/* ===== Reduced motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* Viewport horizontal-scroll guard. The mobile drawer (position:fixed +
+   translateX(±100%)) and any wide leaf content can inflate the viewport's
+   scrollable area; `clip` (not `hidden`, which creates a scroll container
+   and breaks sticky) hard-blocks page-level horizontal dragging forever.
+   Inner scroll regions (e.g. .table-responsive) are unaffected. */
+html, body { overflow-x: clip; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg-base);
+  color: var(--text-dark);
+  font-family: 'Poppins', sans-serif;
+}
+[dir="rtl"] body { font-family: 'Cairo', 'Poppins', sans-serif; }
+
+#root { width: 100%; min-height: 100vh; }
+
+a { color: var(--primary); text-decoration: none; }
+a:hover { color: var(--primary-light); }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #c5c5df; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+[data-theme="dark"] ::-webkit-scrollbar-thumb { background: #34355e; }
+
+/* ===== Bootstrap overrides ===== */
+.btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.5rem 1.5rem;
+  transition: all 0.2s;
+}
+.btn-primary:hover, .btn-primary:focus {
+  background: var(--primary-light);
+  border-color: var(--primary-light);
+  box-shadow: 0 4px 12px rgba(45, 47, 126, 0.3);
+}
+
+.btn-warning, .btn-orange {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: white;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.btn-warning:hover { background: var(--orange-dark); border-color: var(--orange-dark); color: white; }
+
+.btn-danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  transition: all 0.2s;
+}
+
+.btn-outline-primary {
+  border-color: var(--primary);
+  color: var(--primary);
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.btn-outline-primary:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-outline-secondary {
+  border-color: var(--border);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  transition: all 0.2s;
+}
+.btn-outline-secondary:hover { background: var(--bg-input); color: var(--text-dark); border-color: var(--text-muted); }
+
+.btn-secondary {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: white;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.btn-secondary:hover { background: var(--orange-dark); border-color: var(--orange-dark); color: white; }
+
+.form-control, .form-select {
+  background: var(--bg-input);
+  border: 1px solid #e0e0e8;
+  color: var(--text-dark);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select { border-color: var(--border); }
+.form-control:focus, .form-select:focus {
+  background: var(--bg-card);
+  border-color: var(--primary);
+  color: var(--text-dark);
+  box-shadow: 0 0 0 3px rgba(45, 47, 126, 0.12);
+}
+.form-control::placeholder { color: var(--text-muted); }
+.form-control:disabled, .form-select:disabled {
+  background: #e8e8ee;
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+[data-theme="dark"] .form-control:disabled,
+[data-theme="dark"] .form-select:disabled { background: #1c1d3d; }
+
+/* Select chevron — custom, theme-aware, direction-aware.
+   Gives selects a visible "this is a dropdown" affordance. */
+.form-select {
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%236a6a8f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='m4 6 4 4 4-4'/%3E%3C/svg%3E");
+  background-image: var(--chevron);
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px 12px;
+  padding-right: 2.25rem;
+  padding-left: 0.75rem;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+[data-theme="dark"] .form-select {
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23a0a2d0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='m4 6 4 4 4-4'/%3E%3C/svg%3E");
+}
+[dir="rtl"] .form-select {
+  background-position: left 0.75rem center;
+  padding-left: 2.25rem;
+  padding-right: 0.75rem;
+}
+
+.form-label {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.4rem;
+}
+
+.table { color: var(--text-dark); border-color: var(--border); }
+.table thead th {
+  background: var(--bg-card);
+  color: var(--primary);
+  border-color: var(--border);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.9rem 1.1rem;
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+}
+.table tbody td {
+  border-color: var(--border);
+  /* Roomier rows — the old 0.85rem padding made long queues hard to scan */
+  padding: 0.95rem 1.1rem;
+  vertical-align: middle;
+  font-size: 0.875rem;
+  color: var(--text-dark);
+}
+.table-hover tbody tr:hover { background-color: #f5f5fb !important; }
+[data-theme="dark"] .table-hover tbody tr:hover { background-color: #20213f !important; }
+.table-light { --bs-table-bg: var(--bg-card); --bs-table-color: var(--primary); }
+
+.alert-danger {
+  background: rgba(231, 76, 60, 0.08);
+  border-color: rgba(231, 76, 60, 0.2);
+  color: #c0392b;
+  border-radius: var(--radius-sm);
+}
+.alert-success {
+  background: rgba(46, 204, 113, 0.08);
+  border-color: rgba(46, 204, 113, 0.2);
+  color: #27ae60;
+  border-radius: var(--radius-sm);
+}
+
+.nav-tabs { border-color: var(--border); }
+.nav-tabs .nav-link {
+  color: var(--text-muted);
+  border-color: transparent;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.6rem 1.25rem;
+  transition: all 0.2s;
+}
+.nav-tabs .nav-link:hover { color: var(--primary); border-color: transparent; }
+.nav-tabs .nav-link.active {
+  background: transparent;
+  color: var(--primary);
+  border-bottom: 2px solid var(--orange);
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  font-weight: 600;
+}
+
+.accordion-item { background: var(--bg-card); border-color: var(--border); border-radius: var(--radius-sm) !important; }
+.accordion-button { background: var(--primary); color: white; font-size: 0.875rem; border-radius: var(--radius-sm) !important; font-weight: 600; }
+.accordion-button:not(.collapsed) { background: var(--primary-light); color: white; box-shadow: none; }
+.accordion-button::after { filter: brightness(0) invert(1); }
+[dir="rtl"] .accordion-button::after { margin-left: 0; margin-right: auto; }
+.accordion-body { background: var(--bg-card); color: var(--text-secondary); font-size: 0.85rem; }
+
+.text-muted { color: var(--text-muted) !important; }
+.text-primary { color: var(--primary) !important; }
+.text-danger { color: var(--danger) !important; }
+
+/* ===== Status stepper (ticket detail page) ===== */
+.stepper {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  margin: 0.5rem 0 1.25rem;
+}
+.stepper-step {
+  flex: 1;
+  text-align: center;
+  position: relative;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  font-weight: var(--fw-medium);
+}
+.stepper-step::before {
+  /* connector line behind the dot */
+  content: "";
+  position: absolute;
+  top: 11px;
+  inset-inline-start: -50%;
+  width: 100%;
+  height: 2px;
+  background: var(--border);
+  z-index: 0;
+}
+.stepper-step:first-child::before { display: none; }
+.stepper-dot {
+  position: relative;
+  z-index: 1;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--bg-input);
+  border: 2px solid var(--border);
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  margin-bottom: 0.3rem;
+}
+.stepper-step.done .stepper-dot {
+  background: var(--status-resolved);
+  border-color: var(--status-resolved);
+  color: #fff;
+}
+.stepper-step.done { color: var(--status-resolved); font-weight: var(--fw-semibold); }
+.stepper-step.current .stepper-dot {
+  background: var(--status-progress);
+  border-color: var(--status-progress);
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.18);
+}
+.stepper-step.current { color: var(--status-progress); font-weight: var(--fw-bold); }
+/* RTL needs NO connector override: inset-inline-start is a logical property
+   and mirrors the geometry automatically in RTL (each connector spans the
+   step's own dot → the previous status dot to its right). The old
+   inset-inline-end override shifted every connector one slot leftward,
+   leaving the rightmost gap undrawn and poking a 50%-width stub past the
+   last step (hard-clipped by main's overflow-x:hidden at narrow widths).
+   The first-child hide rule above is direction-neutral and covers RTL too. */
+
+/* ===== Command palette ===== */
+.palette-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 16, 32, 0.55);
+  backdrop-filter: blur(2px);
+  z-index: 1200;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 10vh 16px 16px;
+}
+.palette {
+  width: 100%;
+  max-width: 560px;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.palette-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text-dark);
+  font-size: 1rem;
+  padding: 1rem 1.25rem;
+  font-family: inherit;
+}
+.palette-input::placeholder { color: var(--text-muted); }
+.palette-list { max-height: 55vh; overflow-y: auto; border-top: 1px solid var(--border); }
+.palette-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+  text-align: start;
+  background: transparent;
+  border: none;
+  color: var(--text-dark);
+  padding: 0.7rem 1.25rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+.palette-item.active, .palette-item:hover {
+  background: rgba(129, 131, 226, 0.12);
+}
+.palette-item i { color: var(--primary); width: 18px; text-align: center; }
+.palette-item .palette-hint {
+  margin-inline-start: auto;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+.palette-section {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  padding: 0.5rem 1.25rem 0.25rem;
+  font-weight: var(--fw-semibold);
+}
+.palette-empty { padding: 2rem; text-align: center; color: var(--text-muted); }
+
+/* Keyboard-hint footer row (↑/↓ · Enter · Esc) — theme-aware, unobtrusive.
+   Reuses the global .kbd chip styling; direction-neutral (flex + gap only). */
+.palette-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.3rem 1rem;
+  padding: 0.55rem 1.25rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+.palette-footer .hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  white-space: nowrap;
+}
+.palette-footer .kbd {
+  font-size: 0.65rem;
+  padding: 0.05rem 0.35rem;
+}
+
+/* Kbd hint chip (⌘K / Ctrl+K) */
+.kbd {
+  display: inline-block;
+  padding: 0.1rem 0.45rem;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  font-family: inherit;
+  box-shadow: 0 1px 0 var(--border);
+  line-height: 1.4;
+}
+
+/* ===== Print — ticket receipt ===== */
+@media print {
+  body { background: #fff !important; }
+  .app-sidebar, .app-navbar, .app-footer, .app-bg-art, .no-print, [data-sonner-toaster] { display: none !important; }
+  .app-main { margin: 0 !important; padding: 0 !important; }
+  .print-area {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+  .card, [class*="card"] { box-shadow: none !important; border: 1px solid #ddd !important; }
+  a { color: #000 !important; text-decoration: none !important; }
+  /* Keep backgrounds (status-chip fills, header bars) in the print output. */
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  /* Force black text everywhere EXCEPT the colored status/priority/SLA chips
+     (class names match the CSS-module locals used by TicketsTable.jsx and
+     TicketDetailView.jsx — [class*=…] also matches their hashed names).
+     Their inline/CSS colors carry meaning (status color coding), and
+     statusBadge's white-on-color text would become unreadable in black. */
+  *:not([class*="statusBadge"]):not([class*="priorityBadge"]):not([class*="slaOk"]):not([class*="slaOverdue"]):not([class*="slaBreachedBadge"]):not([class*="slaChip"]):not([class*="adminBadge"]):not([class*="statusBadge"] *):not([class*="priorityBadge"] *):not([class*="slaOk"] *):not([class*="slaOverdue"] *):not([class*="slaBreachedBadge"] *):not([class*="slaChip"] *):not([class*="adminBadge"] *) {
+    color: #000 !important;
+  }
+}
+
+/* ===== Global Responsive ===== */
+@media (max-width: 768px) {
+  .table thead th { padding: 0.65rem 0.75rem; font-size: 0.75rem; }
+  .table tbody td { padding: 0.65rem 0.75rem; font-size: 0.8rem; }
+  .container-fluid { padding-left: 0.75rem; padding-right: 0.75rem; }
+  section.p-4 { padding: 1rem !important; }
+}
+
+@media (max-width: 480px) {
+  .btn { font-size: 0.8rem; padding: 0.4rem 0.9rem; }
+  .table-responsive { font-size: 0.8rem; }
+}

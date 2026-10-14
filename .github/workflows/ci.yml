@@ -1,0 +1,78 @@
+# Jameel IT — Help Desk & Ticketing Platform
+# © 2026 Mohammed Jameel · https://imohammedjameel.github.io/ · MIT (see LICENSE + NOTICE)
+# Signature: JMLIT-4FC9A6FEFD
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend — tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: Backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Lint (0 errors required)
+        run: npm run lint
+
+      # Vitest runs against an in-memory MongoDB (mongodb-memory-server),
+      # so no database service is needed.
+      - name: Tests (unit + integration)
+        run: npm test
+        env:
+          NODE_ENV: test
+          DB_URL: mongodb://localhost:27017/ci-placeholder # overridden by test setup
+          JWT_SECRET: ci_jwt_secret_at_least_32_chars_long
+          JWT_REFRESH_SECRET: ci_refresh_secret_at_least_32_ch
+
+  frontend:
+    name: Frontend — build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend/it-help-desk
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/it-help-desk/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Lint (0 errors required)
+        run: npm run lint
+
+      - name: Build (fails on Vite errors)
+        run: npm run build
+        env:
+          VITE_API_URL: /api
+
+  docker:
+    name: Docker images build
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build backend image
+        run: docker build -t it-ticketing-backend ./Backend
+      - name: Build frontend image
+        run: docker build -t it-ticketing-frontend ./frontend/it-help-desk

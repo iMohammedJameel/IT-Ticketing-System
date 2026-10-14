@@ -1,0 +1,778 @@
+/*! Jameel IT — Help Desk & Ticketing Platform · © 2026 Mohammed Jameel
+ * https://imohammedjameel.github.io/ · MIT License · Signature: JMLIT-4FC9A6FEFD
+ * Attribution notice — keep intact when copying/modifying (see LICENSE + NOTICE) */
+/* =====================================================================
+   Dashboard content — pixel-mapped to the approved 1536×1024 reference:
+   welcome header · 5 stat cards (tinted icon + label, big value, trend row)
+   · Recent Tickets table + Top Performers · 3 charts (donut+legend, bars,
+   multi-line) · right panel (profile menu / quick actions / need help).
+   All measurements (colors, sizes, gaps) sampled from the reference image.
+   RTL-safe: logical properties only. Dark mode via [data-theme="dark"].
+   ===================================================================== */
+
+/* ---------- page frame ---------- */
+.wrap {
+  padding: 18px 24px 10px;
+}
+
+.pageHead {
+  margin: 6px 0 18px;
+}
+.pageTitle {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: #12205a;
+  margin: 0 0 6px;
+  letter-spacing: -0.01em;
+}
+[dir="rtl"] .pageTitle { letter-spacing: 0; }
+.welcome {
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: #3A4470;
+  margin: 0 0 3px;
+}
+.description {
+  font-size: 0.86rem;
+  color: #8A93B2;
+  margin: 0;
+}
+
+/* ---------- two-column grid (main + right panel) ---------- */
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 264px;
+  gap: 36px;
+  align-items: start;
+}
+.sideCol {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  position: sticky;
+  top: 12px;
+}
+
+/* ---------- shared card ---------- */
+.card {
+  background: #ffffff;
+  border: 1px solid #E9EBF6;
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 3px 14px rgba(23, 35, 107, 0.05);
+}
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.cardTitle {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: #12205a;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.titleIcon {
+  display: inline-flex;
+  color: #253468;
+}
+.titleIcon svg { width: 18px; height: 18px; }
+.trophyIcon {
+  display: inline-flex;
+  color: #F9A327;
+}
+.trophyIcon svg { width: 19px; height: 19px; }
+
+.viewAll {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  padding: 2px 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #3B7DEB;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s ease;
+}
+.viewAll:hover { color: #2563EB; text-decoration: underline; }
+.viewAll svg { width: 13px; height: 13px; }
+
+/* ---------- stat cards row ---------- */
+.statRow {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 18px;
+}
+.statCard {
+  background: #ffffff;
+  border: 1px solid #E9EBF6;
+  border-radius: 14px;
+  padding: 16px 16px 14px;
+  box-shadow: 0 3px 14px rgba(23, 35, 107, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 138px;
+}
+.statTop {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.statIcon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.statIcon svg { width: 22px; height: 22px; }
+.statLabel {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #64748B;
+  line-height: 1.25;
+}
+.statValue {
+  font-size: 2.35rem;
+  font-weight: 700;
+  color: #0F1C4D;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+[dir="rtl"] .statValue { letter-spacing: 0; }
+.statTrend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+}
+.trendVal {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+/* Semantic trend colors (reference): green = good direction, red = bad —
+   for "inverted" metrics (Open/In Progress/SLA) a FALLING value is good. */
+.trendGood { color: #22C55E; }
+.trendBad { color: #EF4444; }
+.statVs {
+  font-size: 0.72rem;
+  color: #94A3B8;
+}
+
+/* ---------- middle row: table + performers ---------- */
+.midRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.tableCard { display: flex; flex-direction: column; }
+
+.tableScroll { overflow-x: auto; }
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 560px;
+}
+.table thead tr {
+  background: #F7F9FD;
+}
+.table th {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748B;
+  text-align: start;
+  padding: 9px 12px;
+  white-space: nowrap;
+}
+.thDate { text-align: end; }
+.table tbody tr {
+  border-bottom: 1px solid #EEF1F8;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.table tbody tr:last-child { border-bottom: none; }
+.table tbody tr:hover { background: #F8FAFF; }
+.table td {
+  font-size: 0.82rem;
+  color: #33415C;
+  padding: 12px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.row:focus-visible { outline: 2px solid #3B7DEB; outline-offset: -2px; }
+.ticketId {
+  font-weight: 500;
+  color: #0F1C4D;
+  font-size: 0.8rem;
+}
+.statusDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-inline-end: 8px;
+  vertical-align: middle;
+}
+.subject {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+  color: #2A3654;
+}
+.dateCell {
+  color: #7C86A5;
+  font-size: 0.78rem;
+  text-align: end;
+}
+.chevCell { width: 24px; }
+.rowChev {
+  color: #B3BBD1;
+  display: inline-flex;
+}
+
+/* pills (priority + status) — light bg + colored text, fully rounded */
+.pill {
+  display: inline-block;
+  padding: 3px 11px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.prio-low { background: #EAF9F0; color: #22A55C; }
+.prio-medium { background: #FEF3E2; color: #E58211; }
+.prio-high { background: #FDEBEC; color: #EF4444; }
+.prio-urgent { background: #F1EBFE; color: #8B4CE8; }
+.stat-open { background: #FDEBEC; color: #EF4444; }
+.stat-in-progress { background: #FEF3E2; color: #E58211; }
+.stat-resolved { background: #EAF9F0; color: #22A55C; }
+.stat-closed { background: #EEF1F7; color: #64748B; }
+
+/* ---------- top performers ---------- */
+.performerList { display: flex; flex-direction: column; }
+.performer {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 11px 0;
+  border-bottom: 1px solid #EEF1F8;
+}
+.performer:last-child { border-bottom: none; }
+/* Reference: plain large navy rank NUMBER (no circle) — and for #1 a
+   solid gold crown floating just above the number. */
+.rank {
+  position: relative;
+  min-width: 14px;
+  height: 36px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0F1C4D;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.rankCrown {
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #E8A020;
+  line-height: 0;
+}
+.rankCrown svg { width: 12px; height: 12px; }
+.performerAvatar {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #DEEAFC;
+  color: #23256B;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+/* Alternating reference tints: blue → lavender → purple → purple-blue */
+.perfAlt2 { background: #EAEAF6; }
+.perfAlt3 { background: #EAE4FC; }
+.perfAlt4 { background: #EAE4FC; }
+.performerMeta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.performerName {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #0F1C4D;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.performerEmail {
+  font-size: 0.62rem;
+  color: #94A3B8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.scoreBox {
+  text-align: center;
+  flex-shrink: 0;
+}
+.scoreVal {
+  display: block;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: #0F1C4D;
+  line-height: 1.1;
+}
+.scoreLabel {
+  font-size: 0.64rem;
+  color: #94A3B8;
+}
+
+/* ---------- charts row ---------- */
+.chartRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 16px;
+  margin-bottom: 6px;
+}
+.chartCard { min-width: 0; }
+.trendsCard { grid-column: auto; }
+
+/* pie + side legend */
+.donutWrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.donutBox {
+  position: relative;
+  flex: 0 0 52%;
+  max-width: 200px;
+}
+.donutLegend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.donutLegend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.76rem;
+}
+.legendDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.legendName {
+  color: #47556E;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.legendPct {
+  font-weight: 700;
+  color: #0F1C4D;
+}
+
+/* trends mini legend */
+.trendLegend {
+  display: flex;
+  gap: 14px;
+  margin: 2px 0 6px;
+  font-size: 0.72rem;
+  color: #64748B;
+  flex-wrap: wrap;
+}
+.trendLegend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.trendLegend i {
+  width: 10px;
+  height: 3px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.skeletonStack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.emptyBtn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 16px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.emptyBtn:hover { background: var(--primary-light); }
+
+/* ---------- right panel: profile card ---------- */
+.profileHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.profileAvatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #1E2C63;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.profileAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.profileMeta { min-width: 0; }
+.profileName {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #0F1C4D;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.profileRole {
+  font-size: 0.7rem;
+  color: #94A3B8;
+  margin-top: 2px;
+}
+.menuDivider {
+  height: 1px;
+  background: #E9EBF6;
+  margin: 14px 0 8px;
+}
+.profileMenu { display: flex; flex-direction: column; gap: 2px; }
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 10px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #33415C;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: start;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+.menuItem:hover { background: #F3F5FB; color: #1F2B57; }
+.menuItem svg { flex-shrink: 0; color: #5C6A93; }
+.menuLabel { flex: 1; min-width: 0; }
+/* Logout matches the reference: same grey/blue as every other row
+   (marker class kept in JSX for semantics/a11y tooling only). */
+.menuBadge {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #EF4444;
+  color: #fff;
+  font-size: 0.66rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ---------- right panel: quick actions ---------- */
+.sideTitle {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #12205a;
+  margin: 0 0 12px;
+}
+.qaGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+.qaTile {
+  background: #F6F8FD;
+  border: none;
+  border-radius: 12px;
+  padding: 15px 8px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.qaTile:hover { background: #EDF1FB; transform: translateY(-1px); }
+.qaIcon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Reference: LIGHT tinted squares with colored icons (like the stat
+   cards) — not solid saturated fills. Measured: blue/purple/slate. */
+.qaBlue { background: #E8EEFE; color: #3B82F6; }
+.qaPurple { background: #F1EAFE; color: #9C60D8; }
+.qaGreen { background: #E3F6EE; color: #10B981; }
+.qaSlate { background: #EEF1F7; color: #606C9C; }
+/* Dark theme: translucent tints + lifted icon colors */
+[data-theme="dark"] .qaBlue { background: rgba(59, 130, 246, 0.18); color: #7FA8F7; }
+[data-theme="dark"] .qaPurple { background: rgba(168, 85, 247, 0.18); color: #C49AF8; }
+[data-theme="dark"] .qaGreen { background: rgba(16, 185, 129, 0.18); color: #6FDCB2; }
+[data-theme="dark"] .qaSlate { background: rgba(100, 116, 139, 0.22); color: #A9B4CC; }
+.qaLabel {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #33415C;
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* ---------- right panel: need help ---------- */
+.needHelp {
+  background: #ffffff;
+  border: 1px solid #E9EBF6;
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 3px 14px rgba(23, 35, 107, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+}
+.nhIcon {
+  color: #1E2C63;
+  margin-bottom: 6px;
+}
+.nhTitle {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #12205a;
+  margin: 0;
+}
+.nhText {
+  font-size: 0.72rem;
+  color: #8A93B2;
+  margin: 0 0 10px;
+  line-height: 1.5;
+}
+.nhBtn {
+  width: 100%;
+  background: #1B2C66;
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  padding: 9px 14px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: background 0.15s ease;
+}
+.nhBtn:hover { background: #27397D; }
+.nhBtn svg { width: 13px; height: 13px; }
+
+/* ---------- onboarding checklist (first-run only) ---------- */
+.onboard {
+  margin-bottom: 18px;
+  border-inline-start: 4px solid #F2994A;
+}
+.onboardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.onboardClose {
+  background: none;
+  border: none;
+  color: #8A93B2;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+.onboardClose:hover { background: #F3F5FB; color: #33415C; }
+.onboardItems {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.onboardItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 13px;
+  background: #F6F8FD;
+  border: 1px solid #E9EBF6;
+  border-radius: 9px;
+  color: #33415C;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+.onboardItem:hover { border-color: #3B7DEB; color: #2563EB; }
+.onboardIcon { font-size: 0.85rem; }
+
+/* =====================================================================
+   Dark mode — reference is light-only; dark keeps the same geometry with
+   the app's dark surface tokens so nothing glares.
+   ===================================================================== */
+[data-theme="dark"] .card,
+[data-theme="dark"] .statCard,
+[data-theme="dark"] .needHelp {
+  background: var(--bg-card);
+  border-color: var(--border);
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.35);
+}
+[data-theme="dark"] .pageTitle { color: #e6e8f5; }
+[data-theme="dark"] .welcome { color: #c3c8e0; }
+[data-theme="dark"] .description { color: #8b90ad; }
+[data-theme="dark"] .cardTitle,
+[data-theme="dark"] .sideTitle,
+[data-theme="dark"] .nhTitle { color: #e6e8f5; }
+[data-theme="dark"] .titleIcon { color: #aab3d8; }
+[data-theme="dark"] .statValue,
+[data-theme="dark"] .ticketId,
+[data-theme="dark"] .performerName,
+[data-theme="dark"] .scoreVal,
+[data-theme="dark"] .legendPct { color: #eef0fa; }
+[data-theme="dark"] .statLabel,
+[data-theme="dark"] .table td { color: #b8bed8; }
+[data-theme="dark"] .statVs,
+[data-theme="dark"] .performerEmail,
+[data-theme="dark"] .scoreLabel,
+[data-theme="dark"] .profileRole { color: #7d84a5; }
+[data-theme="dark"] .subject { color: #cfd4e8; }
+[data-theme="dark"] .table thead tr { background: rgba(255,255,255,0.04); }
+[data-theme="dark"] .table th { color: #9aa2c2; }
+[data-theme="dark"] .table tbody tr { border-bottom-color: rgba(255,255,255,0.07); }
+[data-theme="dark"] .table tbody tr:hover { background: rgba(255,255,255,0.04); }
+[data-theme="dark"] .performer,
+[data-theme="dark"] .menuDivider { border-bottom-color: rgba(255,255,255,0.07); background: none; }
+[data-theme="dark"] .performer { border-bottom: 1px solid rgba(255,255,255,0.07); }
+[data-theme="dark"] .menuDivider { height: 1px; }
+[data-theme="dark"] .rank { background: rgba(255,255,255,0.08); color: #c3c8e0; }
+[data-theme="dark"] .rankFirst { background: rgba(249,163,39,0.18); color: #f9a327; }
+[data-theme="dark"] .performerAvatar { background: rgba(99,102,241,0.22); color: #c7cdf6; }
+[data-theme="dark"] .crownFloat { background: rgba(249,163,39,0.22); color: #f9a327; }
+[data-theme="dark"] .menuItem { color: #c3c8e0; }
+[data-theme="dark"] .menuItem svg { color: #9aa2c2; }
+[data-theme="dark"] .menuItem:hover { background: rgba(255,255,255,0.06); color: #fff; }
+[data-theme="dark"] .qaTile { background: rgba(255,255,255,0.05); }
+[data-theme="dark"] .qaTile:hover { background: rgba(255,255,255,0.09); }
+[data-theme="dark"] .qaLabel { color: #c3c8e0; }
+[data-theme="dark"] .nhText { color: #8b90ad; }
+[data-theme="dark"] .onboardItem { background: rgba(255,255,255,0.05); border-color: var(--border); color: #c3c8e0; }
+[data-theme="dark"] .legendName { color: #b8bed8; }
+[data-theme="dark"] .dateCell { color: #8b90ad; }
+[data-theme="dark"] .rowChev { color: #5d6485; }
+
+/* =====================================================================
+   Responsive
+   ===================================================================== */
+@media (max-width: 1399px) {
+  .statValue { font-size: 2rem; }
+  .midRow { grid-template-columns: minmax(0, 1fr) 270px; }
+}
+
+@media (max-width: 1199px) {
+  /* minmax(0,…) is REQUIRED — a bare 1fr means minmax(auto,1fr) whose
+     auto floor = the wide table's min-content (~650px), so the track (and
+     every child card with it) blows past the phone viewport in RTL. */
+  .grid { grid-template-columns: minmax(0, 1fr); }
+  .sideCol {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 991px) {
+  .midRow { grid-template-columns: minmax(0, 1fr); }
+  .chartRow { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .trendsCard { grid-column: 1 / -1; }
+  .statRow { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+}
+
+@media (max-width: 767px) {
+  .wrap { padding: 14px 14px 8px; }
+  .chartRow { grid-template-columns: 1fr; }
+  .trendsCard { grid-column: auto; }
+  .pageTitle { font-size: 1.3rem; }
+  .statValue { font-size: 1.75rem; }
+  .donutWrap { flex-direction: column; }
+  .donutBox { flex: none; width: 170px; }
+  .donutLegend { flex-direction: row; flex-wrap: wrap; gap: 8px 14px; }
+}
+
+@media (max-width: 575px) {
+  .statRow { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .sideCol { grid-template-columns: minmax(0, 1fr); }
+  .card, .statCard { padding: 14px; }
+  .subject { max-width: 170px; }
+}

@@ -1,0 +1,79 @@
+/*! Jameel IT — Help Desk & Ticketing Platform · © 2026 Mohammed Jameel
+ * https://imohammedjameel.github.io/ · MIT License · Signature: JMLIT-4FC9A6FEFD
+ * Attribution notice — keep intact when copying/modifying (see LICENSE + NOTICE) */
+/* Footer — reference: transparent band over the shell's skyline artwork.
+   Left (inline-start): "Jameel | IT Ticketing System v1.0.0".
+   Right (inline-end): gold dash + "Together We Solve IT Challenges".
+   The middle stays empty so the background skyline shows through. */
+.footer {
+  background-color: transparent;
+  border-top: none;
+  padding: 0.55rem 1.5rem 0.8rem;
+  margin-top: auto;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.brandSide {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  color: #6A7494;
+  min-width: 0;
+}
+.brandName {
+  font-weight: 700;
+  color: #2A3654;
+  font-size: 0.76rem;
+}
+.sep { opacity: 0.45; }
+.brandFull { white-space: nowrap; }
+.version {
+  color: #9AA3C0;
+  font-size: 0.68rem;
+}
+
+.mottoSide {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.goldDash {
+  width: 42px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #EDA832, #F9C876);
+  flex-shrink: 0;
+}
+[dir="rtl"] .goldDash {
+  background: linear-gradient(-90deg, #EDA832, #F9C876);
+}
+.motto {
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: #4A5578;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+[data-theme="dark"] .brandName { color: #d5d9ee; }
+[data-theme="dark"] .brandSide,
+[data-theme="dark"] .motto { color: #9aa2c2; }
+[data-theme="dark"] .version,
+[data-theme="dark"] .sep { color: #6d7494; }
+
+@media (max-width: 767px) {
+  .footer {
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    text-align: center;
+  }
+  .brandFull { white-space: normal; }
+}

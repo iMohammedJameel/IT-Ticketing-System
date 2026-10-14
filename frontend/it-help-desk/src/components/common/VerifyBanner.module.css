@@ -1,0 +1,85 @@
+/*! Jameel IT — Help Desk & Ticketing Platform · © 2026 Mohammed Jameel
+ * https://imohammedjameel.github.io/ · MIT License · Signature: JMLIT-4FC9A6FEFD
+ * Attribution notice — keep intact when copying/modifying (see LICENSE + NOTICE) */
+/* Amber verification banner — sits between the navbar and the page content */
+
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 18px;
+  margin: 12px 18px 0;
+  border-radius: 10px;
+  border: 1px solid #f6c556;
+  background: rgba(255, 193, 7, 0.14);
+  color: #92600a;
+  font-size: 0.85rem;
+}
+
+[data-theme="dark"] .banner {
+  color: #ffd166;
+  border-color: rgba(255, 209, 102, 0.35);
+  background: rgba(255, 193, 7, 0.1);
+}
+
+.banner > i:first-child {
+  font-size: 1.05rem;
+  color: #d97706;
+}
+
+[data-theme="dark"] .banner > i:first-child {
+  color: #ffd166;
+}
+
+.message {
+  margin: 0;
+  flex: 1 1 240px;
+  min-width: 200px;
+  font-weight: 500;
+}
+
+.resendBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #d97706;
+  background: #fff;
+  color: #92600a;
+  border-radius: 8px;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.resendBtn:hover:not(:disabled) {
+  background: #d97706;
+  color: #fff;
+}
+
+.resendBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dismissBtn {
+  border: none;
+  background: none;
+  color: inherit;
+  opacity: 0.7;
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 0.9rem;
+}
+
+.dismissBtn:hover {
+  opacity: 1;
+}
+
+.dismissBtn:focus-visible,
+.resendBtn:focus-visible {
+  outline: 2px solid #d97706;
+  outline-offset: 2px;
+}

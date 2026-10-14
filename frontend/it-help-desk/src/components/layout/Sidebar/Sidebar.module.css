@@ -1,0 +1,284 @@
+/*! Jameel IT — Help Desk & Ticketing Platform · © 2026 Mohammed Jameel
+ * https://imohammedjameel.github.io/ · MIT License · Signature: JMLIT-4FC9A6FEFD
+ * Attribution notice — keep intact when copying/modifying (see LICENSE + NOTICE) */
+/* ═════════════════════════════════════════════════════════════════════
+   SIDEBAR — pixel-true rebuild of the approved reference design
+   ("Jameel IT Support" navy sidebar, 1536×1024 reference).
+
+   Measured from the reference (sidebar = 238px + 1px separator):
+     · bg solid navy #0A1F40 · separator #C3C8DB
+     · logo: mark 52×87 @ left 33 (extracted asset), "Jameel" 22px/700
+       white, sub-line 10px/600 #8B97AF letterspaced 0.6px
+     · nav items: x 20→217 (198 wide) · 48px tall · 4px gaps · radius 8px
+       · icon 20px stroke-2 · 16px inset + 16px icon→label gap · 14px/500
+     · ACTIVE pill: gradient #2A50A3 → #24468F → #1E3D86 + white filled
+       house icon (22px) · label 600
+     · badge: 22px circle #355FC5, white 11px/700 bold, 8px from item end
+     · bottom art (extracted): 238×254 anchored 196px above the bottom
+     · tagline: 14px/19px lines #9CA5B8 · gold bar 71×3 #E9A22F @ 104px
+   RTL: logical properties mirror everything; the extracted art and logo
+   mark stay unmirrored (decorative brand art — same rule as the login).
+   ═════════════════════════════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap');
+
+.sidebar {
+  position: relative;
+  width: 238px;
+  height: 100vh;
+  flex-shrink: 0;
+  background: #0A1F40;
+  border-inline-end: 1px solid #C3C8DB;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* nav labels + tagline render in Cairo (measured widths match the
+     reference); the brand name/sub-line are Poppins (see below) */
+  font-family: 'Cairo', 'Poppins', sans-serif;
+  transition: transform 0.3s ease;
+}
+
+/* ── brand row ── mark is the EXACT 50×85 reference crop: content lands
+   at x 33 / y 24 like the reference, so the nav starts at y 139 ── */
+.logo {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 6px 30px 33px;
+  flex-shrink: 0;
+}
+
+.logoMark {
+  display: block;
+  width: 50px;
+  height: 85px;
+  flex-shrink: 0;
+}
+
+.logoText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* "Jameel" — reference measures 104px wide / ~20px caps → Poppins 700 @27px
+   (canvas-verified: 104px). Arabic (جميل) falls through to Cairo. */
+.brandName {
+  font-family: 'Poppins', 'Cairo', sans-serif;
+  font-size: 27px;
+  font-weight: 700;
+  line-height: 28px;
+  color: #FFFFFF;
+  letter-spacing: 0;
+}
+
+/* sub-line — reference: 104px wide / 7px caps → Poppins 600 @10px exact */
+.brandSub {
+  margin-top: 5px;
+  font-family: 'Poppins', 'Cairo', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 10px;
+  letter-spacing: 0;
+  color: #8B97AF;
+  white-space: nowrap;
+}
+
+/* ── navigation ─────────────────────────────────────────────────── */
+.nav {
+  position: relative;
+  z-index: 2;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none; /* the reference has no scrollbar gutter */
+}
+.nav::-webkit-scrollbar { display: none; }
+
+.navItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  height: 48px;
+  margin: 0 20px 4px;
+  padding-inline-start: 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #F5F7FA;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.navItem:hover {
+  background: rgba(42, 80, 163, 0.32);
+  color: #FFFFFF;
+}
+
+.navItem:focus-visible {
+  outline: 2px solid #7BA4E8;
+  outline-offset: -2px;
+}
+
+/* ACTIVE — the reference's royal-blue pill with a subtle vertical
+   gradient (lighter top edge → darker bottom edge, measured) */
+.navItem.active {
+  background: linear-gradient(
+    180deg,
+    #2A50A3 0%,
+    #24468F 18%,
+    #22418D 75%,
+    #1E3D86 100%
+  );
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.navItem.active:hover {
+  background: linear-gradient(
+    180deg,
+    #2A50A3 0%,
+    #24468F 18%,
+    #22418D 75%,
+    #1E3D86 100%
+  );
+}
+
+.navIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.navIcon svg {
+  flex-shrink: 0; /* the 26px filled house must not squeeze into the 24px box */
+}
+
+/* icon box (24px) + 13px gap → label lands at x 73 like the reference;
+   the filled house renders at 26px to hit the reference's 22×20 glyph */
+.navItem.active .navIcon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.navLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  /* reference label widths match Cairo 500 @14px + 0.4px tracking */
+  letter-spacing: 0.4px;
+}
+
+/* Arabic is cursive — tracking would break letter connections */
+[dir="rtl"] .navLabel {
+  letter-spacing: 0;
+}
+
+/* ── Tickets badge — 22px blue circle, white bold number ───────── */
+.badge {
+  position: absolute;
+  inset-inline-end: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  min-width: 22px;
+  height: 22px;
+  padding-inline: 5px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: #355FC5;
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── bottom decoration (extracted reference art + tagline) ─────── */
+.sidebarArt {
+  position: absolute;
+  inset-inline-start: 0;
+  bottom: 196px;
+  width: 238px;
+  height: 254px;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+.tagline {
+  position: absolute;
+  inset-inline-start: 33px;
+  bottom: 113px;
+  z-index: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  line-height: 19px;
+  font-weight: 400;
+  color: #9CA5B8;
+  letter-spacing: 0.3px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+[dir="rtl"] .tagline {
+  letter-spacing: 0;
+}
+
+.goldBar {
+  position: absolute;
+  inset-inline-start: 33px;
+  bottom: 105px;
+  width: 71px;
+  height: 2px;
+  border-radius: 2px;
+  background: #EDA832;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* very short viewports — the decoration folds away before it can
+   collide with the nav; the nav itself always stays scrollable */
+@media (max-height: 760px) {
+  .sidebarArt,
+  .tagline,
+  .goldBar {
+    display: none;
+  }
+}
+
+/* ── responsive drawer (<768px) — slides from the reading side ──── */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    inset-inline-start: 0;
+    height: 100vh;
+    z-index: 300;
+    transform: translateX(-100%);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.25);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  [dir="rtl"] .sidebar {
+    transform: translateX(100%);
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.25);
+  }
+
+  [dir="rtl"] .sidebar.open {
+    transform: translateX(0);
+  }
+}

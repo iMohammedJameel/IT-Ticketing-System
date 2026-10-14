@@ -1,0 +1,119 @@
+/*! Jameel IT — Help Desk & Ticketing Platform · © 2026 Mohammed Jameel
+ * https://imohammedjameel.github.io/ · MIT License · Signature: JMLIT-4FC9A6FEFD
+ * Attribution notice — keep intact when copying/modifying (see LICENSE + NOTICE) */
+.header {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 1rem 1.5rem;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+.header span { color: var(--text-dark); font-weight: 700; }
+.header i { color: var(--primary); }
+
+[data-theme="dark"] .header span,
+[data-theme="dark"] .header i {
+  color: #ffffff !important;
+}
+
+.countBadge {
+  background: rgba(156, 158, 232, 0.15);
+  color: var(--primary);
+  font-weight: 700;
+  border-radius: 12px;
+  padding: 3px 10px;
+  font-size: 0.82rem;
+}
+
+[data-theme="dark"] .countBadge {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff !important;
+}
+
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.card table {
+  min-width: 750px;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.roleBadge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.roleAdmin {
+  background: rgba(74, 78, 140, 0.15);
+  color: var(--primary);
+}
+
+.roleUser {
+  background: var(--bg-input);
+  color: var(--text-secondary);
+}
+
+.statusBadge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.statusActive {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--success);
+}
+
+.statusSuspended {
+  background: rgba(231, 76, 60, 0.15);
+  color: var(--danger);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Add-User modal inline validation error (fix-5, item F13) — same pattern
+   as the auth forms' errorMsg, but theme-aware via app variables. */
+.addFormError {
+  color: var(--danger);
+  font-size: 0.82rem;
+  margin: 0 0 0.75rem;
+  padding: 8px 12px;
+  background: rgba(231, 76, 60, 0.08);
+  border: 1px solid rgba(231, 76, 60, 0.25);
+  border-radius: 8px;
+}

@@ -1,0 +1,64 @@
+<!doctype html>
+<!--
+  Jameel IT — Help Desk & Ticketing Platform
+  © 2026 Mohammed Jameel · https://imohammedjameel.github.io/ · MIT License
+  Source-file headers carry the same notice — see LICENSE + NOTICE.
+  Signature: JMLIT-4FC9A6FEFD
+-->
+<!-- Arabic-first product: static defaults are AR + RTL. The inline script
+     below corrects lang/dir/Bootstrap to the visitor's saved choice (or the
+     EN default for English users) BEFORE first paint. -->
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Brand + SEO / share cards -->
+    <title>Jameel Ticketing | IT-Helpdesk</title>
+    <meta name="description" content="Jameel IT Help Desk — create tickets, track SLAs, browse the knowledge base and get support faster." />
+    <meta name="application-name" content="Jameel Ticketing" />
+    <meta name="author" content="Mohammed Jameel" />
+    <meta name="copyright" content="© 2026 Mohammed Jameel — imohammedjameel.github.io (MIT)" />
+    <meta property="og:title" content="Jameel Ticketing | IT-Helpdesk" />
+    <meta property="og:description" content="Create tickets, track SLAs and get support faster." />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#23256b" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f1020" media="(prefers-color-scheme: dark)" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+
+    <!--
+      Bootstrap is swapped between the LTR and RTL builds when the app
+      language changes (see src/i18n). The <link> href is set BEFORE React
+      boots by the inline script below, so Arabic users never see an LTR
+      flash. Files live in /public/vendor (self-hosted, no CDN needed).
+    -->
+    <link id="bootstrap-css" rel="stylesheet" href="/vendor/bootstrap.rtl.min.css" />
+    <script>
+      // Anti-flash: pick the right Bootstrap build before first paint.
+      // Sets BOTH lang and dir consistently from localStorage — defaulting
+      // to Arabic/RTL (Arabic-first product) so a first visit never renders
+      // Arabic text inside an LTR document.
+      (function () {
+        try {
+          var lang = localStorage.getItem("app_language");
+          lang = lang === "en" ? "en" : "ar"; // default: ar
+          var rtl = lang === "ar";
+          document.documentElement.lang = lang;
+          document.documentElement.dir = rtl ? "rtl" : "ltr";
+          document.getElementById("bootstrap-css").href = rtl
+            ? "/vendor/bootstrap.rtl.min.css"
+            : "/vendor/bootstrap.min.css";
+        } catch (e) { /* private mode etc. — Arabic/RTL default stays */ }
+      })();
+    </script>
+
+    <!-- Fonts: Poppins (Latin) + Cairo (Arabic) — preconnect for speed -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

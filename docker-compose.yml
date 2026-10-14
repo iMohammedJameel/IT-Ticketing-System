@@ -1,0 +1,72 @@
+# Jameel IT — Help Desk & Ticketing Platform
+# © 2026 Mohammed Jameel · https://imohammedjameel.github.io/ · MIT (see LICENSE + NOTICE)
+# Signature: JMLIT-4FC9A6FEFD
+# =====================================================================
+# Jameel IT Ticketing System — full stack, one command:
+#   docker compose up -d --build
+#
+# Services:
+#   mongo    — database with a named volume (data survives reboots)
+#   backend  — Express API (uploads on a named volume — attachments and
+#              avatars survive redeploys)
+#   frontend — Vite-built SPA served by nginx, proxying /api + /socket.io
+#              to the backend (same-origin — no CORS in production)
+#
+# First run:  docker compose exec backend npm run seed
+# API docs:   http://localhost:3000/api/docs-ui
+# =====================================================================
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    # Not exposed to the host by default — the backend reaches it on the
+    # internal network. Uncomment to inspect with Compass:
+    # ports:
+    #   - "27017:27017"
+
+  backend:
+    build: ./Backend
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DB_URL: mongodb://mongo:27017/it-ticketing
+      # ⚠️ REQUIRED — the backend REFUSES to boot in production with these
+      # placeholder values (config/env.js guard). Generate real ones:
+      #   openssl rand -hex 32
+      JWT_SECRET: change_me_to_a_long_random_string_min_32_chars
+      JWT_REFRESH_SECRET: change_me_to_another_long_random_string
+      CORS_ORIGINS: http://localhost:3000
+      CLIENT_URL: http://localhost:3000
+      # Email → ticket webhook (leave empty to disable the endpoint)
+      INBOUND_EMAIL_SECRET: ""
+      # Optional S3 storage (leave S3_ENABLED=false for disk volume)
+      S3_ENABLED: "false"
+    volumes:
+      # Named volume — attachments/avatars survive container replacement
+      - uploads_data:/app/uploads
+    ports:
+      - "5000:5000" # direct API access for dev/testing (optional)
+
+  frontend:
+    build: ./frontend/it-help-desk
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  mongo_data:
+  uploads_data:

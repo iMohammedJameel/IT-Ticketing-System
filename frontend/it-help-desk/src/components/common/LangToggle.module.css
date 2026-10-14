@@ -1,0 +1,97 @@
+/*! Jameel IT — Help Desk & Ticketing Platform · © 2026 Mohammed Jameel
+ * https://imohammedjameel.github.io/ · MIT License · Signature: JMLIT-4FC9A6FEFD
+ * Attribution notice — keep intact when copying/modifying (see LICENSE + NOTICE) */
+/* Floating language pill — sits at the top inline-end corner of every
+   auth page (over the navy form side on the login split, clear of the
+   centered cards on register/forgot/reset). Dark glass + gold active
+   state to harmonize with the navy/gold "Egyptian Elegance" login. */
+.pill {
+  position: fixed;
+  top: 18px;
+  inset-inline-end: 18px;
+  z-index: 1200;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(10, 25, 51, 0.55);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 18px rgba(2, 10, 25, 0.35);
+}
+
+.option {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: inherit;
+  line-height: 1;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.option:hover {
+  color: #fff;
+}
+
+.option.active {
+  background: linear-gradient(135deg, #E3C566, #D4AF37);
+  color: #0A1F3D;
+  box-shadow: 0 2px 10px rgba(212, 175, 55, 0.45);
+}
+
+.option:focus-visible {
+  outline: 2px solid #E3C566;
+  outline-offset: 1px;
+}
+
+.divider {
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.7rem;
+  line-height: 1;
+  user-select: none;
+}
+
+/* ── Ghost variant (login pixel-true page) — the reference mockup has no
+   pill, so the switch melts into the navy corner: no chrome, just quiet
+   text. Fully usable, visually near-invisible. ── */
+.ghost {
+  background: transparent;
+  border: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+  top: 14px;
+  inset-inline-end: 20px;
+}
+
+.ghost .option {
+  color: rgba(255, 255, 255, 0.5);
+  padding: 4px 8px;
+  font-size: 0.74rem;
+}
+
+.ghost .option:hover {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.ghost .option.active {
+  background: transparent;
+  color: #D9BC85;
+  box-shadow: none;
+}
+
+.ghost .option:focus-visible {
+  outline: 1.5px solid rgba(217, 188, 133, 0.6);
+}
+
+.ghost .divider {
+  color: rgba(255, 255, 255, 0.28);
+}

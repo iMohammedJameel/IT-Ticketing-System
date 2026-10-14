@@ -1,0 +1,508 @@
+/*! Jameel IT — Help Desk & Ticketing Platform · © 2026 Mohammed Jameel
+ * https://imohammedjameel.github.io/ · MIT License · Signature: JMLIT-4FC9A6FEFD
+ * Attribution notice — keep intact when copying/modifying (see LICENSE + NOTICE) */
+.nav {
+  /* Reference header: FULLY transparent band — the faint circuit-trace
+     artwork shows through at full strength exactly like the reference.
+     Scrolled content never reaches this zone: .app-main carries a top
+     fade-out mask (see Dashboard.module.css), so nothing renders under
+     the navbar controls. A soft downward shadow replaces the old 1px
+     border (measured y72–94 band in the reference). */
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border-bottom: none;
+  box-shadow: 0 10px 24px -12px rgba(35, 37, 107, 0.12);
+  padding: 0.75rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+}
+
+[data-theme="dark"] .nav {
+  box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.5);
+}
+
+.parentImg img {
+  width: 44px;
+  height: auto;
+}
+
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: var(--primary);
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.hamburger:hover { background: rgba(35, 37, 107, 0.08); }
+
+.iconButton {
+  background: transparent;
+  border: none;
+  font-size: 1.15rem;
+  color: var(--text-secondary);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  padding: 0;
+  outline: none;
+}
+
+.iconButton:hover {
+  background: rgba(35, 37, 107, 0.08);
+  color: var(--primary);
+}
+
+/* Search trigger — a pill-shaped BUTTON that opens the command palette.
+   It looks like an input (affordance: icon + placeholder text + shortcut chip).
+   Reference: faint LAVENDER tint (#F6F6FC), not pure white — measured. */
+.searchBox {
+  flex: 1;
+  min-width: 0; /* may shrink below content so the TEXT ellipsizes, never the button (BUG-qa6-13) */
+  max-width: 380px;
+  margin: 0 2rem;
+  background: #F6F6FC !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 50px !important;
+  height: 40px;
+  padding: 0 1rem !important;
+  gap: 0.6rem;
+  box-shadow: 0 2px 10px rgba(35, 37, 107, 0.07) !important;
+  color: var(--text-muted) !important;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+.searchBox:hover {
+  border-color: var(--primary) !important;
+  color: var(--text-secondary) !important;
+  box-shadow: 0 2px 14px rgba(35, 37, 107, 0.12) !important;
+}
+[data-theme="dark"] .searchBox { background: var(--bg-card) !important; }
+.searchBox i { font-size: 0.9rem; color: var(--text-muted); }
+.searchBox .kbd { flex-shrink: 0; } /* the hint chip never gets squeezed */
+.searchText {
+  flex: 1;
+  min-width: 0; /* flex children need this to actually shrink + ellipsize (BUG-qa6-13) */
+  text-align: start;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* Cairo's tall glyphs overflow a 1.5 line box by ~2px — give them room */
+  line-height: 1.8;
+}
+
+.adminSection { position: relative; }
+
+.notificationSection {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.countNoti {
+  position: absolute;
+  font-size: 0.65rem;
+  font-weight: 700;
+  top: 2px;
+  inset-inline-end: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 50px;
+  line-height: 16px;
+  text-align: center;
+  background: var(--danger);
+  color: white;
+  pointer-events: none;
+  box-shadow: 0 2px 4px rgba(235, 87, 87, 0.4);
+}
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  overflow: hidden;
+  border: none;
+  padding: 0;
+  box-shadow: 0 2px 6px rgba(35, 37, 107, 0.2);
+  flex-shrink: 0;
+}
+.avatar:hover { transform: scale(1.05); }
+
+/* User chip — reference navbar: avatar + name/role stack + chevron
+   in ONE clickable button that opens the profile dropdown. */
+.userChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  padding: 4px 6px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.18s ease;
+}
+.userChip:hover { background: rgba(35, 37, 107, 0.06); }
+.userChip .avatar { cursor: inherit; }
+.userChip:hover .avatar { transform: none; }
+.userMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  min-width: 0;
+}
+.userName {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+.userRole {
+  font-size: 0.66rem;
+  color: var(--text-muted);
+  line-height: 1.2;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.userChip > svg {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+[data-theme="dark"] .userName { color: #e6e8f5; }
+[data-theme="dark"] .userChip:hover { background: rgba(255, 255, 255, 0.07); }
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  inset-inline-end: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  z-index: 1000;
+  min-width: 200px;
+  padding: 6px 0;
+  overflow: hidden;
+  animation: dropIn 0.15s ease;
+}
+
+/* Who's logged in — header inside the profile dropdown */
+.dropdownUser {
+  padding: 10px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.dropdownUser strong {
+  color: var(--text-dark);
+  font-size: 0.9rem;
+}
+.dropdownUser small {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@keyframes dropIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdownItem {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-dark) !important;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: start;
+  transition: all 0.15s ease;
+}
+
+.dropdownItem:hover {
+  background: rgba(156, 158, 232, 0.12) !important;
+  color: var(--primary) !important;
+}
+
+.dropdownItem i {
+  font-size: 0.9rem;
+  width: 18px;
+  color: var(--text-secondary);
+  text-align: center;
+  transition: color 0.15s ease;
+}
+
+.dropdownItem:hover i {
+  color: var(--primary);
+}
+
+[data-theme="dark"] .dropdownItem {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .dropdownItem i {
+  color: #c0c3ea !important;
+}
+
+[data-theme="dark"] .dropdownItem:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .dropdownItem:hover i {
+  color: #ffffff !important;
+}
+
+/* Notification Dropdown */
+.notifDropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  inset-inline-end: -10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  z-index: 1000;
+  width: 320px;
+  overflow: hidden;
+  animation: dropIn 0.15s ease;
+}
+
+.notifHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1.1rem;
+  border-bottom: 1px solid var(--border);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text-dark);
+  background: var(--bg-card);
+}
+
+.notifMarkAllBtn {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--primary);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+}
+.notifMarkAllBtn:hover { text-decoration: underline; }
+
+.notifList {
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.notifItem {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1.1rem;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s;
+  background: var(--bg-card);
+  position: relative;
+  width: 100%;
+  text-align: start;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
+.notifItem:last-child { border-bottom: none; }
+.notifItem:hover { background: rgba(156, 158, 232, 0.08); }
+
+.notifUnread { background: rgba(156, 158, 232, 0.12); }
+.notifUnread:hover { background: rgba(156, 158, 232, 0.18); }
+
+.notifAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), #7c7fdd);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.notifContent {
+  flex: 1;
+  min-width: 0;
+}
+.notifContent p {
+  margin: 0 0 0.2rem;
+  font-size: 0.83rem;
+  color: var(--text-dark);
+  font-weight: 500;
+  line-height: 1.4;
+}
+.notifContent span {
+  font-size: 0.75rem;
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.notifDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--primary);
+  flex-shrink: 0;
+}
+
+.notifEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem;
+  color: var(--text-secondary);
+  gap: 0.5rem;
+}
+.notifEmpty i { font-size: 2rem; color: var(--text-muted); }
+.notifEmpty p { margin: 0; font-size: 0.85rem; color: var(--text-secondary); }
+
+.notifFooter {
+  text-align: center;
+  padding: 0.7rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--primary);
+  border-top: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s;
+  background: var(--bg-card);
+}
+.notifFooter button {
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 0.875rem;
+  width: 100%;
+  cursor: pointer;
+}
+[data-theme="dark"] .notifFooter button {
+  color: #ffffff !important;
+}
+.notifFooter:hover { background: rgba(156, 158, 232, 0.1); }
+
+/* Notification Detail Modal */
+.notifModalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.2s ease;
+  padding: 1rem;
+}
+
+.notifModal {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 2rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  animation: slideUp 0.2s ease;
+}
+
+.notifModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.notifModalIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), #7c7fdd);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.notifModalText {
+  font-size: 1rem;
+  color: var(--text-dark);
+  font-weight: 500;
+  line-height: 1.6;
+  margin-bottom: 0.75rem;
+}
+
+.notifModalTime {
+  font-size: 0.8rem;
+  color: #aaa;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hamburger { display: flex; align-items: center; }
+  .nav { padding: 0.6rem 1rem; }
+  .searchBox { max-width: 180px; margin: 0 0.75rem; }
+  .userMeta { display: none; }
+  .userChip { gap: 0; padding: 2px; }
+}
+
+@media (max-width: 480px) {
+  .searchBox { display: none; }
+  .nav { padding: 0.6rem 0.75rem; }
+}

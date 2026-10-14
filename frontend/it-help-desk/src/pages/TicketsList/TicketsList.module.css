@@ -1,0 +1,547 @@
+/*! Jameel IT — Help Desk & Ticketing Platform · © 2026 Mohammed Jameel
+ * https://imohammedjameel.github.io/ · MIT License · Signature: JMLIT-4FC9A6FEFD
+ * Attribution notice — keep intact when copying/modifying (see LICENSE + NOTICE) */
+.tabBar {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.tabBar span { color: var(--text-dark); font-weight: 700; font-size: 1.05rem; }
+.tabBar i { color: var(--primary); }
+
+[data-theme="dark"] .tabBar span,
+[data-theme="dark"] .tabBar i {
+  color: #ffffff !important;
+}
+
+.btnModalClose {
+  background: var(--orange) !important;
+  border-color: var(--orange) !important;
+  color: white !important;
+  font-weight: 700;
+  padding: 0.5rem 1.5rem;
+  border-radius: var(--radius-sm);
+}
+
+.btnModalClose:hover {
+  background: var(--orange-dark) !important;
+  border-color: var(--orange-dark) !important;
+}
+
+.btnModalSave {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: white !important;
+  font-weight: 700;
+  padding: 0.5rem 1.5rem;
+  border-radius: var(--radius-sm);
+}
+
+.btnModalSave:hover {
+  background: var(--primary-light) !important;
+  border-color: var(--primary-light) !important;
+}
+
+.btnSendComment {
+  background: #38bdf8 !important;
+  border-color: #38bdf8 !important;
+  color: white !important;
+  font-weight: 700;
+  padding: 0.4rem 1.25rem;
+  border-radius: var(--radius-sm);
+}
+
+.btnSendComment:hover {
+  background: #0284c7 !important;
+  border-color: #0284c7 !important;
+}
+
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.card table {
+  min-width: 750px;
+}
+
+.selectedRow,
+.selectedRow > td {
+  background-color: rgba(156, 158, 232, 0.22) !important;
+  color: var(--text-dark) !important;
+}
+
+.bulkBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  flex-wrap: wrap;
+}
+
+.bulkBar span {
+  font-size: 0.9rem;
+  color: var(--text-dark);
+}
+
+.categoryBadge {
+  display: inline-block;
+  padding: 3px 10px;
+  background: var(--bg-input);
+  color: var(--text-dark);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  text-transform: capitalize;
+  font-weight: 500;
+}
+
+.priorityBadge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.statusBadge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  text-transform: capitalize;
+}
+
+.slaOk {
+  color: var(--success);
+  font-size: 0.75rem;
+}
+
+.slaOverdue {
+  color: var(--danger);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.slaBreachedBadge {
+  color: var(--danger);
+  margin-left: 4px;
+}
+
+.pagination {
+  border-top: 1px solid var(--border);
+  background: var(--bg-card);
+}
+
+/* Modal content styles */
+.adminControls {
+  background: var(--bg-input);
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  margin-top: 16px;
+}
+
+.adminControls h6 {
+  color: var(--primary);
+}
+
+.commentsList {
+  max-height: 320px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px;
+}
+
+.commentItem {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+}
+
+.commentAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.commentAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.commentContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.commentAuthor {
+  color: var(--text-dark);
+  font-size: 0.85rem;
+}
+
+.adminBadge {
+  background: var(--primary);
+  color: white;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+}
+
+.commentTime {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+}
+
+.commentText {
+  color: var(--text-dark);
+  font-size: 0.875rem;
+  margin: 4px 0 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.commentInput {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.historyList {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.historyItem {
+  display: flex;
+  gap: 12px;
+  padding: 8px 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  position: relative;
+  padding-inline-start: 16px;
+  border-inline-start: 2px solid var(--border);
+  margin-inline-start: 4px;
+}
+
+.historyDot {
+  position: absolute;
+  inset-inline-start: -6px;
+  top: 12px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 2px solid var(--bg-card);
+}
+
+.historyItem code {
+  background: var(--bg-input);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: var(--text-dark);
+}
+
+.attachmentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.attachmentItem {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+}
+
+.attachmentLink {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.attachmentLink:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .bulkBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .bulkBar .form-select {
+    width: 100% !important;
+  }
+}
+
+/* ===== CSAT (star rating) widget ===== */
+.csatBox {
+  background: var(--bg-secondary, #f8f9fa);
+  border: 1px solid var(--border-color, #e9ecef);
+  border-radius: 12px;
+}
+
+.csatStar {
+  font-size: 1.5rem;
+  color: #d1d5db;
+  transition: transform 0.1s ease, color 0.1s ease;
+}
+
+.csatStar:hover {
+  transform: scale(1.15);
+}
+
+/* ===== Queue view tabs (staff) ===== */
+.viewTabs {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px;
+  width: fit-content;
+}
+
+.viewTab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 1rem;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.viewTab:hover {
+  color: var(--primary);
+  background: rgba(129, 131, 226, 0.08);
+}
+
+.viewTabActive {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+}
+.viewTabActive:hover {
+  background: var(--primary-light);
+  color: #fff;
+}
+.viewTab i { font-size: 0.8rem; }
+
+/* ===== Ticket detail PAGE ===== */
+.detailPageHead {
+  min-height: 34px;
+}
+
+.detailWrap {
+  max-width: 1200px;
+}
+
+.detailHeader {
+  gap: 0.75rem;
+}
+
+.detailTitle {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin: 0;
+  min-width: 0;
+}
+
+.detailNumber {
+  color: var(--primary);
+  font-size: 1.05rem;
+  background: rgba(129, 131, 226, 0.12);
+  padding: 2px 10px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.detailSectionTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.75rem;
+}
+
+.slaChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+}
+
+/* ===== Quick-facts sidebar — one-line grid rows (BUG-qa6-4/16..21) =====
+   2-column grid: label column hugs its content, value column takes the
+   rest and is allowed to shrink (minmax(0,1fr)) so values ELLIPSIS at the
+   inline end instead of hard-clipping; every pair aligns on one baseline;
+   generous row gap so a timestamp can never crowd the row above. */
+.factList {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.factRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.4rem 1rem;
+  align-items: baseline;
+  font-size: 0.85rem;
+  /* Cairo glyphs overflow a 1.5 line box by ~3px (Arabic diacritics) */
+  line-height: 1.8;
+}
+
+.factRow dt {
+  margin: 0;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.factValue {
+  margin: 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* values sit at the inline-end edge (mirrors in RTL) */
+  gap: 0.5rem;
+  color: var(--text-dark);
+}
+
+.factText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Tags row keeps WRAPPING badges (never one-line ellipsis) */
+.factTags {
+  margin: 0;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.25rem;
+}
+
+/* ===== Comment composer (BUG-qa6-15) — Cairo descenders in the placeholder
+   need a taller line box + comfortable padding so nothing is cut at the
+   bottom edge, in both RTL and LTR. ===== */
+.commentTextarea {
+  padding: 0.7rem 0.9rem;
+  line-height: 1.8;
+}
+
+/* ===== Tickets table (BUG-qa6-22/23) =====
+   Ticket-number column: th AND td share ONE class (same width hint on both)
+   so the header can never drift from its data column, and the ID itself
+   ellipsizes (never a mid-character cut) with the full value in title. */
+.colTicketId {
+  width: 10rem;
+}
+
+.ticketId {
+  font-weight: 600;
+  max-width: 9.5rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ticketSubject {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Attachment image thumbnails */
+.thumbGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.thumbItem {
+  aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  display: block;
+  background: var(--bg-input);
+}
+
+.thumbItem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.2s ease;
+}
+
+.thumbItem:hover img { transform: scale(1.06); }
+
+/* Internal-note comments get a warning accent on the reading side */
+.commentInternal {
+  border-inline-start: 3px solid var(--prio-medium);
+}
+
+.commentsList { max-height: 480px; }
+.historyList { max-height: 520px; }

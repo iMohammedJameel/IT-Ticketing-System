@@ -1,0 +1,52 @@
+Jameel IT — Help Desk & Ticketing Platform
+Copyright © 2026 Mohammed Jameel (https://imohammedjameel.github.io/)
+Build signature: JMLIT-4FC9A6FEFD
+
+This project is licensed under the MIT License (see the LICENSE file).
+
+NOTICE — ATTRIBUTION REQUIREMENTS
+=================================
+
+The MIT License grants you the right to use, copy, modify, merge, publish,
+distribute and sublicense this software, INCLUDING the right to build
+commercial products on top of it. You are welcome to fork it, learn from it,
+and ship it. However, the license REQUIRES that you:
+
+  1. RETAIN the copyright notice above and this NOTICE file (or an
+     equivalent notice containing the author name, URL and signature) in
+     all copies or substantial portions of the Software.
+
+  2. RETAIN the per-file source header comments (`/*! ... */`) that carry
+     the author notice and build signature. Removing or altering them for
+     the purpose of disguising the origin of the code constitutes a knowing
+     violation of the license and of the author's moral rights.
+
+  3. When you redistribute the Software publicly (e.g. publishing a GitHub
+     repository that contains it), keep the LICENSE and NOTICE files intact
+     and unmodified.
+
+The Software additionally carries the following embedded attribution marks,
+which are part of the notice layer described above:
+
+  - HTTP response headers on the API (x-authored-by, x-app-source,
+    x-app-signature) — defined in Backend/app.js + Backend/config/attribution.js
+  - Console signature + <html data-app-author / data-app-signature> DOM
+    markers in the web app — defined in frontend/it-help-desk/src/main.jsx
+    and src/attribution.js
+  - Build banners on top of every production JS chunk — defined in
+    frontend/it-help-desk/vite.config.js
+  - OCI image labels on the Docker images — defined in both Dockerfiles
+  - npm metadata fields (author, contributors, homepage, repository,
+    "jameel-it".signature) — defined in both package.json files
+  - The unique build signature JMLIT-4FC9A6FEFD, which allows the author to
+    locate copies of this codebase (e.g. via GitHub code search) even after
+    cosmetic renames
+
+None of these marks affect functionality, performance or the API surface.
+They exist solely so that the authorship of the original work remains
+traceable, as permitted and required by the license.
+
+Derivative works that comply with the above are explicitly welcomed —
+keep the notices, credit the original author, and build something great.
+
+                                                          — Mohammed Jameel

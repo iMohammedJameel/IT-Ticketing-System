@@ -1,0 +1,40 @@
+# ── Dependencies ──────────────────────────────
+node_modules/
+
+# ── Environment (NEVER commit secrets) ────────
+.env
+.env.*
+!.env.example
+
+# ── Build output ──────────────────────────────
+dist/
+dist-ssr/
+build/
+
+# ── Runtime data ──────────────────────────────
+Backend/uploads/*
+!Backend/uploads/.gitkeep
+logs/
+*.log
+
+# ── Coverage & test artifacts ─────────────────
+coverage/
+playwright-report/
+test-results/
+.nyc_output/
+*.lcov
+
+# ── Caches ────────────────────────────────────
+.cache/
+.vite/
+*.eslintcache
+*.tsbuildinfo
+
+# ── OS / editor ───────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.suo
+*.sw?

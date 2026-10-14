@@ -1,0 +1,571 @@
+/*! Jameel IT — Help Desk & Ticketing Platform · © 2026 Mohammed Jameel
+ * https://imohammedjameel.github.io/ · MIT License · Signature: JMLIT-4FC9A6FEFD
+ * Attribution notice — keep intact when copying/modifying (see LICENSE + NOTICE) */
+/* ═════════════════════════════════════════════════════════════════════
+   LOGIN — pixel-true rebuild of the reference design
+   "Jameel IT Support: Egyptian Login Elegance" (1536×1024).
+
+   The whole composition (photo, navy canvas, wedge, brand, band, skyline,
+   circuits, glyphs, stripes, chamfer band + gold edge + the panel's baked
+   shadow) ships as ONE asset cut from the reference itself:
+   login-bg-en.webp — used for BOTH languages (unified design, client
+   rule v2). The Arabic page keeps the exact same composition; only the
+   panel's live DOM text switches AR/EN.
+
+   The live DOM panel lands EXACTLY on the asset's panel hole using pure
+   percentages (stretch mapping — 1:1 with the background at any size).
+   Positioning is PHYSICAL (left/top — not logical) so the panel stays on
+   the asset's hole (right side of the art) even in RTL:
+     left 59.70% (917px) · top 13.77% (141px)
+     width 36.13% (555px) · height 74.51% (763px)
+   Chamfer: clip-path cutting the top-inline-end corner
+     (1360,141)→(1472,243) ⇒ 79.82% / 13.37% in panel units.
+   All inner metrics re-measured from the reference (cap-height scans):
+     title 50px · subtitle 21px · inputs 19px/64px tall · button 65px/23px
+     · MS 62px · checkbox 22px · underline 50×3 @y283 · texts EN only.
+   ═════════════════════════════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
+
+.loginPage {
+  /* design tokens (measured from the reference) */
+  --bg-navy: #031D3C;        /* canvas fallback (asset covers it) */
+  --panel-bg: #FBFCFE;       /* (gradient below is the real fill) */
+  --gold: #C6985C;           /* unified antique gold */
+  --gold-strong: #BE924A;    /* underline / deeper gold (measured) */
+  --ink: #082852;            /* headings / MS text (measured) */
+  --muted: #73819F;          /* subtitle (measured) */
+  --field-bg: #FAFBFD;       /* input fill (measured — faint off-white) */
+  --field-border: #DEE3ED;   /* input border (measured) */
+  --placeholder: #6B7A96;    /* placeholder (measured — darker than before) */
+  --icon-in: #33496A;        /* input icons (measured) */
+  --btn-navy: #032650;       /* Sign In button (measured) */
+  --link: #0866EB;           /* forgot link (measured bluest) */
+  --datasafe: #7689B2;       /* trust footer (measured) */
+  --label: #1F3560;          /* remember label (measured) */
+
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  background: var(--bg-navy);
+  /* the reference panel typography is Cairo Latin (wide, geometric —
+     width-per-cap measurements prove it; matches the Egyptian theme) */
+  font-family: 'Cairo', 'Inter', sans-serif;
+  overflow: hidden;
+}
+
+:global([dir="rtl"]) .loginPage {
+  font-family: 'Cairo', 'Inter', sans-serif;
+}
+
+/* ════════════════ THE COMPOSITION ASSET ════════════════
+   Reference pixels, stretched 1:1 with the viewport (fill mapping). */
+.bgArt {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  z-index: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ════════════════ THE WHITE PANEL (live DOM) ════════════════
+   Pure percentages → lands exactly on the asset's panel hole. */
+.panel {
+  position: absolute;
+  /* PHYSICAL left (not logical) — the asset's panel hole is on the right
+     side of the art in BOTH languages; a logical start would flip the
+     panel to the wrong side in RTL. */
+  left: 59.70%;
+  top: 13.77%;
+  width: 36.13%;
+  height: 74.51%;
+  z-index: 4;
+  container-type: size;
+  container-name: loginPanel;
+}
+
+.panelInner {
+  position: absolute;
+  inset: 0;
+  /* measured panel gradient: bright top-left → cool gray bottom-right */
+  background: linear-gradient(165deg, #FCFCFE 0%, #F3F6FA 55%, #ECF0F7 100%);
+  border-radius: 4.32cqw;
+  /* 45° chamfer, top-inline-end — the asset's navy band + gold edge
+     and the panel's baked shadow show through the cut              */
+  clip-path: polygon(0 0, 79.82% 0, 100% 13.37%, 100% 100%, 0 100%);
+  /* CENTERED LAYOUT (client rule v3): the content block is vertically
+     centered in the card (justify-content: center + symmetric block
+     padding) and the text elements are horizontally centered — the
+     measured top-anchored chain was retired with the MS button removal. */
+  padding-block: 7.5cqh;
+  padding-inline: 9.9cqw 9.2cqw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+/* faint Eye of Horus watermark inside the panel, top-inline-end
+   (present in the reference next to the chamfer) */
+.panelWatermark {
+  position: absolute;
+  top: 3.2cqh;
+  /* physical right — the chamfer is always the top-RIGHT corner now */
+  right: 1.8cqw;
+  width: 16.5cqw;
+  color: #123058;
+  opacity: 0.13;
+  pointer-events: none;
+}
+
+/* ── panel content (vertical rhythm in cqh, sizes in cqw) — text
+     elements horizontally CENTERED per the centered-card layout ── */
+.loginTitle {
+  font-size: 7.9cqw;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.05;
+  letter-spacing: 0;
+  margin: 0;
+  text-align: center;
+}
+
+/* gold accent bar under the heading — centered under the title */
+.goldUnderline {
+  display: block;
+  width: 9cqw;
+  height: 0.54cqw;
+  min-height: 3px;
+  border-radius: 2px;
+  background: var(--gold-strong);
+  margin-top: 1.42cqh;
+  margin-inline: auto;
+}
+
+.loginSubtitle {
+  font-size: 3.6cqw;
+  font-weight: 400;
+  color: var(--muted);
+  letter-spacing: 0.012em;
+  margin: 2.05cqh 0 0;
+  line-height: 1.35;
+  text-align: center;
+}
+
+/* ── inputs — 64px tall, 11px radius, near-white fill (measured) ── */
+.loginField {
+  margin-top: 2.74cqh;
+}
+
+.loginField:first-of-type {
+  margin-top: 5.06cqh;
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIcon {
+  position: absolute;
+  inset-inline-start: 2.66cqw;
+  width: 5.6cqw;
+  height: 5.6cqw;
+  color: var(--icon-in);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.inputIcon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.loginField input {
+  width: 100%;
+  height: 8.4cqh;
+  min-height: 42px;
+  padding-inline-start: 11.3cqw;
+  padding-inline-end: 7.9cqw;
+  border: 1px solid var(--field-border);
+  border-radius: 2cqw;
+  font-size: 3.6cqw;
+  background: var(--field-bg);
+  color: #16233B;
+  line-height: 1.15;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+/* email field has no trailing toggle → tighter end padding */
+.loginField input:not([type="password"]):not([type="text"]) {
+  padding-inline-end: 2.9cqw;
+}
+
+.loginField input::placeholder {
+  color: var(--placeholder);
+  letter-spacing: 0.01em;
+}
+
+.loginField input:focus {
+  border-color: #3B82F6;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.eyeBtn {
+  position: absolute;
+  inset-inline-end: 1.9cqw;
+  width: 3.6cqw;
+  height: 3.6cqw;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #76869F;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.eyeBtn svg {
+  width: 100%;
+  height: 100%;
+}
+
+.eyeBtn:hover {
+  color: var(--link);
+}
+
+.capsLock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  gap: 6px;
+  color: #B45309;
+  font-size: 2.8cqw;
+  font-weight: 500;
+  margin-top: 0.6cqh;
+}
+
+/* ── remember me + forgot password ── */
+.loginOptions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 3.1cqh;
+  flex-wrap: wrap;
+}
+
+.rememberLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 3cqw;
+  font-size: 3.35cqw;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--label);
+  cursor: pointer;
+  margin: 0;
+}
+
+/* 22×22px navy checkbox (measured #054A96) */
+.rememberLabel input {
+  width: 3.96cqw;
+  height: 3.96cqw;
+  min-width: 15px;
+  min-height: 15px;
+  accent-color: #054A96;
+  border-radius: 5px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.forgotLink {
+  color: var(--link);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 3.35cqw;
+  line-height: 1.35;
+  transition: opacity 0.2s;
+}
+
+.forgotLink:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+.forgotLink:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Sign In button — navy #032650, 65px tall, 23px label ── */
+.loginBtn {
+  width: 100%;
+  height: 8.5cqh;
+  min-height: 44px;
+  margin-top: 3.37cqh;
+  background: linear-gradient(180deg, #042A58 0%, #032854 60%, #032650 100%);
+  color: #fff;
+  border: none;
+  border-radius: 2.8cqw;
+  font-size: 3.6cqw;
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: 0.05em;
+  padding-top: 0.6cqh;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2cqw;
+  font-family: inherit;
+  transition: background 0.2s, transform 0.15s, opacity 0.2s;
+}
+
+.loginBtn:hover:not(:disabled) {
+  background: #073565;
+  transform: translateY(-1px);
+}
+
+.loginBtn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.loginBtn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.btnArrow {
+  width: 4.6cqw;
+  height: 4.6cqw;
+  flex-shrink: 0;
+}
+
+/* arrow flows with the text direction */
+:global([dir="rtl"]) .btnArrow {
+  transform: scaleX(-1);
+}
+
+.backLink {
+  background: none;
+  border: none;
+  padding: 0.8cqh 0 0;
+  color: var(--link);
+  font-size: 3.2cqw;
+  font-weight: 500;
+  cursor: pointer;
+  /* centered under the MFA field */
+  display: block;
+  width: fit-content;
+  margin-inline: auto;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+/* ── trust footer ── */
+.dataSafe {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2cqw;
+  margin: 5cqh 0 0;
+  font-size: 2.35cqw;
+  line-height: 1.25;
+  color: var(--datasafe);
+  font-weight: 500;
+}
+
+.dataSafeIcon {
+  width: 5cqw;
+  height: 5cqw;
+  color: var(--link);
+  flex-shrink: 0;
+}
+
+/* ── error ── */
+.errorMsg {
+  color: #DC2626;
+  font-size: 2.55cqw;
+  font-weight: 500;
+  margin: 1.4cqh 0 0;
+  padding: 1.6cqh 2.2cqw;
+  background: #FEF2F2;
+  border-radius: 1.8cqw;
+  border: 1px solid #FECACA;
+  text-align: center;
+}
+
+/* ════════════════ REGISTER CTA — MOBILE ONLY ════════════════
+   (the reference design has no register line on desktop) */
+@media (min-width: 1024px) {
+  .registerBelow {
+    display: none;
+  }
+}
+
+.registerBelow {
+  position: absolute;
+  left: 59.7%;
+  width: 36.13vw;
+  top: 89.9vh;
+  z-index: 3;
+  margin: 0;
+  font-size: clamp(10px, 0.95vw, 18px);
+  color: rgba(214, 226, 244, 0.68);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.registerBelow a {
+  color: #D9BC85;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.registerBelow a:hover {
+  text-decoration: underline;
+}
+
+.registerBelow a:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ════════════════ MOBILE BRAND (composition hidden <1024px) ════════════════ */
+.mobileBrand {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding-top: 26px;
+}
+
+.mobileLogoMark {
+  width: 44px;
+  height: auto;
+}
+
+.mobileBrandName {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+
+/* ════════════════════ RESPONSIVE ════════════════════ */
+
+/* tablets portrait & phones: composition hidden, panel in flow */
+@media (max-width: 1023px) {
+  .loginPage {
+    height: auto;
+    min-height: 100dvh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .bgArt {
+    display: none;
+  }
+
+  .mobileBrand {
+    display: flex;
+  }
+
+  .panel {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: 100%;
+    max-width: 480px;
+    height: auto;
+    margin: 14px 16px 22px;
+    container-type: inline-size;
+  }
+
+  .panelInner {
+    position: relative;
+    inset: auto;
+    clip-path: none;
+    border-radius: 20px;
+    /* symmetric — content centers vertically */
+    padding: 28px 24px;
+  }
+
+  /* px fallbacks for the cq metrics */
+  .loginTitle { font-size: 28px; }
+  .goldUnderline { width: 50px; height: 3px; margin-top: 10px; }
+  .loginSubtitle { font-size: 14.5px; margin-top: 12px; }
+  .loginField { margin-top: 14px; }
+  .loginField:first-of-type { margin-top: 22px; }
+  .loginField input { height: 52px; font-size: 14.5px; border-radius: 11px; padding-inline-start: 44px; padding-inline-end: 44px; }
+  .loginField input:not([type="password"]):not([type="text"]) { padding-inline-end: 16px; }
+  .inputIcon { width: 20px; height: 20px; inset-inline-start: 14px; }
+  .eyeBtn { width: 20px; height: 20px; inset-inline-end: 12px; }
+  .capsLock { font-size: 12px; }
+  .loginOptions { margin-top: 18px; }
+  .rememberLabel { font-size: 14px; gap: 8px; }
+  .rememberLabel input { width: 17px; height: 17px; }
+  .forgotLink { font-size: 14px; }
+  .loginBtn { height: 54px; font-size: 16px; border-radius: 12px; margin-top: 16px; gap: 10px; }
+  .btnArrow { width: 18px; height: 18px; }
+  .backLink { font-size: 14px; padding-top: 8px; }
+  .dataSafe { font-size: 12.5px; margin-top: 22px; gap: 7px; }
+  .dataSafeIcon { width: 15px; height: 15px; }
+  .errorMsg { font-size: 13px; padding: 10px 13px; border-radius: 10px; margin-top: 12px; }
+
+  .registerBelow {
+    position: static;
+    width: auto;
+    left: auto;
+    margin: 0 16px 26px;
+    font-size: 13.5px;
+    white-space: normal;
+  }
+}
+
+@media (max-width: 540px) {
+  .panelInner { padding: 26px 18px; border-radius: 16px; }
+  .loginTitle { font-size: 24px; }
+}
+
+/* very small phones */
+@media (max-width: 360px) {
+  .loginTitle { font-size: 22px; }
+  .rememberLabel,
+  .forgotLink { font-size: 12.5px; }
+}
+
+/* keyboard-first users */
+.loginBtn:focus-visible {
+  outline: 3px solid rgba(59, 130, 246, 0.55);
+  outline-offset: 2px;
+}
+
+/* prefers-reduced-motion: drop the micro-animations */
+@media (prefers-reduced-motion: reduce) {
+  .loginBtn,
+  .loginField input {
+    transition: none;
+  }
+  .loginBtn:hover:not(:disabled) {
+    transform: none;
+  }
+}

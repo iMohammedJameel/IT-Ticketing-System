@@ -1,0 +1,148 @@
+/*! Jameel IT — Help Desk & Ticketing Platform · © 2026 Mohammed Jameel
+ * https://imohammedjameel.github.io/ · MIT License · Signature: JMLIT-4FC9A6FEFD
+ * Attribution notice — keep intact when copying/modifying (see LICENSE + NOTICE) */
+/* i18n auth side panel — matches the auth card's deep-purple brand look:
+   layered gradient + glass chips + FontAwesome icons. RTL-safe: only logical
+   properties (inset-inline-*, text-align: start). The panel lives inside the
+   existing .loginImageSide / .registerImageSide containers (hidden < 900px),
+   so responsiveness is inherited from the pages. */
+.panel {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 44px 40px;
+  box-sizing: border-box;
+  color: #fff;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 20% 12%, rgba(139, 92, 246, 0.32) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 90%, rgba(99, 61, 212, 0.28) 0%, transparent 50%),
+    linear-gradient(160deg, #1c1145 0%, #110834 55%, #0d0620 100%);
+}
+
+/* Decorative rings — inset-inline keeps them mirrored under RTL */
+.panel::before,
+.panel::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.panel::before {
+  width: 320px;
+  height: 320px;
+  border: 1.5px solid rgba(139, 92, 246, 0.18);
+  top: -110px;
+  inset-inline-end: -100px;
+}
+
+.panel::after {
+  width: 160px;
+  height: 160px;
+  border: 1.5px solid rgba(139, 92, 246, 0.14);
+  top: 150px;
+  inset-inline-end: 60px;
+}
+
+.kicker {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 18px;
+}
+
+.title {
+  position: relative;
+  z-index: 1;
+  font-size: 1.7rem;
+  font-weight: 800;
+  line-height: 1.22;
+  letter-spacing: -0.3px;
+  margin: 0 0 10px;
+  text-align: start;
+}
+
+.accent {
+  background: linear-gradient(90deg, #a78bfa, #c4b5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  position: relative;
+  z-index: 1;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.62);
+  margin: 0 0 26px;
+  max-width: 34ch;
+  text-align: start;
+}
+
+.features {
+  position: relative;
+  z-index: 1;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.feature {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.featureIcon {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #6c3dd6, #8b5cf6);
+  color: #fff;
+  font-size: 13px;
+  box-shadow: 0 4px 14px rgba(108, 61, 214, 0.35);
+}
+
+@media (max-width: 1100px) {
+  .panel {
+    padding: 32px 28px;
+  }
+
+  .title {
+    font-size: 1.45rem;
+  }
+}
