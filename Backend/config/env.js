@@ -48,6 +48,16 @@ const envSchema = Joi.object({
   S3_ACCESS_KEY_ID: Joi.string().allow("").default(""),
   S3_SECRET_ACCESS_KEY: Joi.string().allow("").default(""),
   S3_ENDPOINT: Joi.string().allow("").default(""),
+  // FIX(QA-009): dev auto-verify on login used to be ALWAYS on, which made
+  // the unverified-email banner/gate untestable locally (login instantly
+  // marked users verified). Now opt-in: set DEV_AUTO_VERIFY=true to keep
+  // the old SMTP-free convenience.
+  DEV_AUTO_VERIFY: Joi.string().valid("true", "false").default("false"),
+  // FIX(QA-009b): REQUIRE_EMAIL_VERIFY gates login for unverified users.
+  // Default: strict in production, permissive in development so the amber
+  // verify-email banner + resend flow are actually demoable/testable.
+  // Set REQUIRE_EMAIL_VERIFY=false|true to override explicitly.
+  REQUIRE_EMAIL_VERIFY: Joi.string().valid("true", "false").default(""),
 }).unknown(true);
 
 const { value, error } = envSchema.validate(process.env);
@@ -115,6 +125,14 @@ module.exports = {
   authRateLimitMax: value.AUTH_RATE_LIMIT_MAX,
   clientUrl: value.CLIENT_URL,
   isProd: value.NODE_ENV === "production",
+  // FIX(QA-009): opt-in dev auto-verify (see schema comment above)
+  devAutoVerify: value.NODE_ENV === "development" && value.DEV_AUTO_VERIFY === "true",
+  // FIX(QA-009b): email-verification login gate — strict in prod, open in dev.
+  // Empty string means "not set" → derive from NODE_ENV.
+  requireEmailVerify:
+    value.REQUIRE_EMAIL_VERIFY !== ""
+      ? value.REQUIRE_EMAIL_VERIFY === "true"
+      : value.NODE_ENV === "production",
   logLevel: value.LOG_LEVEL,
   inboundEmailSecret: value.INBOUND_EMAIL_SECRET,
   workDayStartHour: value.WORK_DAY_START_HOUR,

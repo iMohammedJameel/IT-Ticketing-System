@@ -37,6 +37,21 @@
   --prio-high: #f97316;
   --prio-urgent: #ef4444;
 
+  /* QA-uiux (WCAG 1.4.3): status/priority badge TEXT inks — the vivid base
+     colors above sit on 15% tints and fail 4.5:1 for small badge text
+     (2.0–3.8:1 measured). These 700-weight shades pass on light tints
+     (4.4–6.7:1). Used wherever a status/priority is rendered AS TEXT. */
+  --status-open-ink: #b91c1c;
+  --status-progress-ink: #bc3e0b;
+  --status-resolved-ink: #166534;
+  --status-closed-ink: #4b5563;
+  --prio-low-ink: #166534;
+  --prio-medium-ink: #92400e;
+  --prio-high-ink: #bc3e0b;
+  --prio-urgent-ink: #b91c1c;
+  --success-ink: #1b7a44;
+  --danger-ink: #b91c1c;
+
   /* Surfaces — page bg measured from the approved 1536×1024 reference:
      cool lavender-blue #F0F0FB (content area right-edge median), NOT the old
      warm #EEEAF6. The app shell draws the subtle reference vertical gradient
@@ -109,6 +124,19 @@
   --prio-high: #fb923c;
   --prio-urgent: #f87171;
 
+  /* QA-uiux (WCAG 1.4.3): dark-theme badge TEXT inks — 300-weight shades
+     read clearly on dark tinted chips (7.0–8.7:1 measured). */
+  --status-open-ink: #fca5a5;
+  --status-progress-ink: #fdba74;
+  --status-resolved-ink: #86efac;
+  --status-closed-ink: #d1d5db;
+  --prio-low-ink: #86efac;
+  --prio-medium-ink: #fcd34d;
+  --prio-high-ink: #fdba74;
+  --prio-urgent-ink: #fca5a5;
+  --success-ink: #86efac;
+  --danger-ink: #fca5a5;
+
   --bg-base: #0f1020;
   --bg-page: #0f1020;
   --bg-card: #1a1b3a;
@@ -136,22 +164,67 @@
 }
 [data-theme="dark"] :focus-visible { outline-color: var(--primary-light); }
 
+/* ADD(QA-rec-5): stronger focus treatment for keyboard-openable table rows —
+   a row is a big target and the generic 2px outline gets lost inside busy
+   tables; an inset ring + background tint makes the focused row unmistakable
+   (works in dark mode too, and never triggers on mouse clicks). */
+.table tbody tr[tabindex]:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--primary);
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
+}
+[data-theme="dark"] .table tbody tr[tabindex]:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--primary-light);
+  background: color-mix(in srgb, var(--primary-light) 10%, transparent);
+}
+
+/* ADD(QA-rec-5): skip-to-content link — the first tabbable element on every
+   page. Visually hidden until focused (the standard clip pattern, not
+   display:none which removes it from the tab order); jumps keyboard users
+   straight past the sidebar/navbar chrome into the main content region. */
+.skip-link {
+  position: fixed;
+  top: 8px;
+  inset-inline-start: 8px;
+  z-index: 2000;
+  padding: 10px 18px;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  box-shadow: var(--shadow-md);
+  transform: translateY(-200%); /* off-screen but still focusable */
+  transition: transform 0.15s ease;
+}
+.skip-link:focus-visible {
+  transform: translateY(0);
+  outline: 2px solid var(--primary-light);
+  outline-offset: 2px;
+}
+
 /* ===== Status / priority helpers (used across all screens) ===== */
 .trend-up { color: var(--status-resolved); font-weight: var(--fw-semibold); }
 .trend-down { color: var(--status-open); font-weight: var(--fw-semibold); }
 .trend-flat { color: var(--text-muted); font-weight: var(--fw-medium); }
 
-/* Presence — green "online" dot next to agents */
+/* Presence — green "online" dot next to users (staff AND employees:
+   QA-deep — the offline state is a hollow ring so rows without a live
+   connection read as "offline", not as a missing/broken indicator) */
 .presence-dot {
   display: inline-block;
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: #adb0c5;
+  box-sizing: border-box;
+  background: transparent;
+  border: 2px solid #adb0c5;
   flex-shrink: 0;
 }
 .presence-dot.online {
   background: #22c55e;
+  border-color: #22c55e;
   box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
 }
 
@@ -295,6 +368,26 @@
   background: rgba(255, 255, 255, 0.12) !important;
   color: #ffffff !important;
 }
+
+/* QA-uiux (WCAG 1.4.3): the KB article vote buttons keep bootstrap's
+   #198754/#dc3545 text in dark mode (3.7:1 on the dark card) — lightened
+   inks match the badge ink system (7:1 on the dark input surface). */
+[data-theme="dark"] .btn-outline-success {
+  background: var(--bg-input) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  color: #86efac !important;
+}
+[data-theme="dark"] .btn-outline-danger {
+  background: var(--bg-input) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  color: #fca5a5 !important;
+}
+
+/* QA-uiux (WCAG 1.4.3): bootstrap's .text-success/.text-warning greens and
+   ambers read ~3.7:1 on dark surfaces — lightened to the badge ink shades
+   (7:1+) so verified/unverified markers stay legible in dark mode. */
+[data-theme="dark"] .text-success { color: #86efac !important; }
+[data-theme="dark"] .text-warning { color: #fcd34d !important; }
 
 [data-theme="dark"] .badge.bg-secondary {
   background-color: rgba(255, 255, 255, 0.15) !important;
@@ -638,14 +731,14 @@ a:hover { color: var(--primary-light); }
   border-color: var(--status-resolved);
   color: #fff;
 }
-.stepper-step.done { color: var(--status-resolved); font-weight: var(--fw-semibold); }
+.stepper-step.done { color: var(--status-resolved-ink); font-weight: var(--fw-semibold); }
 .stepper-step.current .stepper-dot {
   background: var(--status-progress);
   border-color: var(--status-progress);
   color: #fff;
   box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.18);
 }
-.stepper-step.current { color: var(--status-progress); font-weight: var(--fw-bold); }
+.stepper-step.current { color: var(--status-progress-ink); font-weight: var(--fw-bold); }
 /* RTL needs NO connector override: inset-inline-start is a logical property
    and mirrors the geometry automatically in RTL (each connector spans the
    step's own dot → the previous status dot to its right). The old
@@ -783,11 +876,45 @@ a:hover { color: var(--primary-light); }
 }
 
 /* ===== Global Responsive ===== */
+/* QA-deep (WCAG 2.5.8 target size): pagination controls were ~24px at every
+   viewport — below the 24px minimum and far below comfortable touch size.
+   Enforce 36×36 hit boxes on page links at ALL sizes (bootstrap-sm default
+   shrinks them; a11y should not depend on screen width). */
+.pagination .page-link {
+  min-width: 2.25rem;
+  min-height: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
 @media (max-width: 768px) {
   .table thead th { padding: 0.65rem 0.75rem; font-size: 0.75rem; }
   .table tbody td { padding: 0.65rem 0.75rem; font-size: 0.8rem; }
   .container-fluid { padding-left: 0.75rem; padding-right: 0.75rem; }
   section.p-4 { padding: 1rem !important; }
+
+  /* QA-visual (WCAG 2.5.8 target size): touch ergonomics on small screens.
+     Bare checkboxes/radios render ~13px inside tables — far below any
+     comfortable tap size. Bump them to 20px (row spacing stays >24px, so
+     the WCAG spacing exception keeps multi-row tables compliant). */
+  input[type="checkbox"]:not(.form-check-input),
+  input[type="radio"]:not(.form-check-input) {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex: none;
+  }
+  /* Bootstrap switches (Settings → notification prefs): scale the whole
+     switch up 2em → 2.8em keeping the 2:1 aspect so the knob grows with
+     it; compensate the hanging indent so label alignment is unchanged. */
+  .form-switch .form-check-input {
+    width: 2.8em;
+    height: 1.4em;
+    margin-inline-start: -3.3em;
+  }
+  /* Small buttons ("View All", row actions…) — comfortable 36px taps. */
+  .btn-sm { min-height: 2.25rem; }
 }
 
 @media (max-width: 480px) {

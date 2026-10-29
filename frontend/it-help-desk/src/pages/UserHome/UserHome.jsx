@@ -122,8 +122,10 @@ function UserHome() {
                   </span>
                   <span className={styles.rowNumber}>{tk.ticketNumber}</span>
                   <span className={styles.rowSubject}>{tk.subject || tk.product}</span>
-                  <span style={{ color: priorityInfo.color, fontWeight: 600, fontSize: "0.75rem" }}>
-                    {t(`status.${tk.priority}`)}
+                  {/* QA-uiux (WCAG 1.4.3): ink shade — vivid base color measured
+                      2.1–3.8:1 as 12px text on the card. */}
+                  <span style={{ color: priorityInfo.ink, fontWeight: 600, fontSize: "0.75rem" }}>
+                    {t(`priority.${tk.priority}`)}
                   </span>
                   {slaLeft && (
                     <span className={late ? styles.rowSlaLate : styles.rowSla}>
@@ -142,7 +144,7 @@ function UserHome() {
         {/* Link to all tickets */}
         <div className="text-center mt-3">
           <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate("/ticketslist")}>
-            {t("home.viewAll")} <i className="fa-solid fa-arrow-right ms-1" aria-hidden="true"></i>
+            {t("home.viewAll")} <i className={`fa-solid ${lang === "ar" ? "fa-arrow-left" : "fa-arrow-right"} ms-1`} aria-hidden="true"></i>
           </button>
         </div>
       </div>

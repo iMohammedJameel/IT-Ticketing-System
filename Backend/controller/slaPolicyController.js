@@ -6,6 +6,7 @@
 // These feed slaPolicyService (60s cache) which ticket creation uses to
 // compute due dates, so changes take effect within a minute.
 const { AppError } = require("../middleware/errorMiddleware");
+const { validateOrThrow } = require("../utils/validation");
 const SLAPolicy = require("../models/SLAPolicy");
 const slaPolicyService = require("../services/slaPolicyService");
 const Joi = require("joi");
@@ -36,8 +37,7 @@ const update = async (req, res, next) => {
     if (!slaPolicyService.DEFAULT_POLICIES.some((p) => p.priority === priority)) {
       throw new AppError("Invalid priority", 400);
     }
-    const { error, value } = updateSchema.validate(req.body, { abortEarly: false, stripUnknown: true });
-    if (error) throw new AppError("Validation error", 400, error.details.map((d) => d.message));
+    const value = validateOrThrow(updateSchema, req.body);
 
     const policy = await SLAPolicy.findOneAndUpdate(
       { priority },

@@ -41,6 +41,10 @@ export const authService = {
 
   // Admin user management
   getAllUsers: (params) => api.get("/auth/users", { params }),
+  // Staff directory (admin + agent) — minimal fields for assignment
+  // dropdowns. FIX(QA-004..007): the old call to /auth/users 403'd for
+  // agents (admin-only route) and left the assign dropdown empty.
+  getStaffDirectory: () => api.get("/auth/staff-directory"),
   toggleUserStatus: (userId) => api.patch(`/auth/users/${userId}/toggle-status`),
   // Role/team management: { role: "user"|"agent"|"admin", team: "..." }
   updateUserRole: (userId, data) => api.patch(`/auth/users/${userId}/role`, data),

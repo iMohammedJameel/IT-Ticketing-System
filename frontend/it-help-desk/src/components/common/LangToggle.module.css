@@ -31,7 +31,9 @@
   font-weight: 600;
   font-family: inherit;
   line-height: 1;
-  padding: 6px 12px;
+  /* QA-deep (WCAG 2.5.8): was 6px 12px ≈ 24px-tall — one hair under the
+     24px minimum. 8px 13px lands ~30px without changing the pill's look. */
+  padding: 8px 13px;
   border-radius: 999px;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
@@ -94,4 +96,14 @@
 
 .ghost .divider {
   color: rgba(255, 255, 255, 0.28);
+}
+
+/* QA-visual (WCAG 2.5.8 target size): on phones the measured hit area of
+   each language option was ~31×20 — under any comfortable tap minimum.
+   Grow the padding on touch-sized screens; the quiet-ghost look is
+   preserved (transparent chrome, same typography). */
+@media (max-width: 768px) {
+  .ghost .option {
+    padding: 12px 14px;
+  }
 }

@@ -2,10 +2,18 @@
  * © 2026 Mohammed Jameel · https://imohammedjameel.github.io/ · MIT License
  * Attribution notice — keep intact when copying/modifying (see LICENSE + NOTICE)
  * Signature: JMLIT-4FC9A6FEFD */
-// Auth controller — register, login, logout, password change, profile
-// All responses use the standardized envelope: { success, data | error }
+// Auth controller — register, login, logout, password change, profile.
+// All responses use the standardized envelope: { success, data | error }.
+//
+// Avatar concerns were split into ./auth/ (single responsibility):
+//   auth/avatarUploadConfig.js   — multer + allowlists + magic bytes
+//   auth/avatarController.js     — upload / serve / legacy base64 handlers
+//   auth/authHelpers.js          — token signing + refresh storage + lockout
+//   auth/mfaLoginVerification.js — TOTP step of the login flow
+//
+// The export surface below is UNCHANGED, so routes/authRoutes.js keeps
+// working without a single edit.
 const User = require("../models/User");
-const Ticket = require("../models/Ticket");
 const {
   registerSchema,
   loginSchema,
@@ -15,80 +23,22 @@ const {
 const { AppError } = require("../middleware/errorMiddleware");
 const env = require("../config/env");
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const crypto = require("crypto");
 const { generateToken } = require("../services/tokenService");
 const { sendVerificationEmail } = require("../services/emailService");
-const { signRefreshToken, hashToken } = require("./refreshTokenController");
-const totp = require("../services/totpService");
-const storage = require("../services/storageService");
+const { signRefreshToken } = require("./refreshTokenController");
+const publicUser = require("../utils/publicUser");
 const logger = require("../utils/logger");
-const multer = require("multer");
-const path = require("path");
-const Joi = require("joi");
-const Comment = require("../models/Comment");
-const Notification = require("../models/Notification");
-const KBArticle = require("../models/KBArticle");
+const { validateOrThrow } = require("../utils/validation");
 
-const MAX_LOGIN_ATTEMPTS = 5;
-const LOCK_TIME_MS = 15 * 60 * 1000; // 15 min
+const {
+  signToken,
+  storeRefreshToken,
+  registerFailedLoginAttempt,
+  LOGIN_ERRORS,
+} = require("./auth/authHelpers");
+const { verifyMfaLogin } = require("./auth/mfaLoginVerification");
 
-// Avatar upload — memory storage; the buffer is validated (magic bytes)
-// then written via the storage service (disk or S3). NEVER stored in the DB
-// document again (the old base64 approach bloated every user doc by up to
-// 2MB and duplicated the blob into every API response that embedded the user).
-const AVATAR_TYPES = {
-  ".png": "image/png",
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".webp": "image/webp",
-  ".gif": "image/gif",
-};
-const AVATAR_MAGIC = {
-  ".png": [Buffer.from([0x89, 0x50, 0x4e, 0x47])],
-  ".jpg": [Buffer.from([0xff, 0xd8, 0xff])],
-  ".jpeg": [Buffer.from([0xff, 0xd8, 0xff])],
-  ".gif": [Buffer.from("GIF87a"), Buffer.from("GIF89a")],
-  ".webp": [Buffer.from("RIFF")],
-};
-const avatarUpload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 2 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const ext = path.extname(file.originalname || "").toLowerCase();
-    if (!AVATAR_TYPES[ext] || !Object.values(AVATAR_TYPES).includes(file.mimetype)) {
-      return cb(new AppError("Avatar must be png, jpg, webp or gif", 400));
-    }
-    cb(null, true);
-  },
-});
-
-// ---------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------
-const signToken = (user) =>
-  jwt.sign(
-    { id: user._id, role: user.role, v: user.tokenVersion },
-    env.jwtSecret,
-    { expiresIn: env.jwtExpiresIn, algorithm: "HS256" }
-  );
-
-const publicUser = (user) => ({
-  id: user._id,
-  name: user.name,
-  email: user.email,
-  role: user.role,
-  team: user.team,
-  profileImage: user.profileImage,
-  status: user.status,
-  emailVerifiedAt: user.emailVerifiedAt,
-  mfaEnabled: !!user.mfaEnabled,
-  notificationPrefs: user.notificationPrefs,
-  jobTitle: user.jobTitle,
-  department: user.department,
-  phone: user.phone,
-  createdAt: user.createdAt,
-});
+const { avatarUpload, uploadAvatar, getAvatar, updateProfileImage } = require("./auth/avatarController");
 
 // ---------------------------------------------------------------------
 // Register — role is FORCED to "user". Self-promotion to admin is impossible.
@@ -98,11 +48,7 @@ const publicUser = (user) => ({
 // ---------------------------------------------------------------------
 const register = async (req, res, next) => {
   try {
-    const { error, value } = registerSchema.validate(req.body, {
-      abortEarly: false,
-      stripUnknown: true,
-    });
-    if (error) throw new AppError("Validation error", 400, error.details.map((d) => d.message));
+    const value = validateOrThrow(registerSchema, req.body);
 
     const { name, email, password } = value;
 
@@ -149,11 +95,7 @@ const register = async (req, res, next) => {
 // ---------------------------------------------------------------------
 const login = async (req, res, next) => {
   try {
-    const { error, value } = loginSchema.validate(req.body, {
-      abortEarly: false,
-      stripUnknown: true,
-    });
-    if (error) throw new AppError("Validation error", 400, error.details.map((d) => d.message));
+    const value = validateOrThrow(loginSchema, req.body);
 
     const { email, password } = value;
 
@@ -163,25 +105,27 @@ const login = async (req, res, next) => {
     );
 
     // Generic error — don't reveal whether the email exists
-    const INVALID = "Invalid credentials";
-    const LOCKED = "Account temporarily locked. Try again in 15 minutes.";
+    if (!user) throw new AppError(LOGIN_ERRORS.INVALID, 401);
 
-    if (!user) throw new AppError(INVALID, 401);
-
-    if (user.isLocked) throw new AppError(LOCKED, 423);
+    if (user.isLocked) throw new AppError(LOGIN_ERRORS.LOCKED, 423);
 
     if (user.status === "suspended") {
       throw new AppError("Account suspended. Contact your administrator.", 403);
     }
 
-    // Email verification enforcement — block login for unverified users.
-    // Development convenience: auto-verify on first login so local testing
-    // doesn't require SMTP. Tests keep the strict 403 path (NODE_ENV=test).
+    // Email verification enforcement.
+    // FIX(QA-009/009b): this block used to either auto-verify EVERY dev
+    // login (making the unverified banner + gate untestable) or hard-403 in
+    // prod (making the banner dead code). Now three explicit modes:
+    //   DEV_AUTO_VERIFY=true  → convenience auto-verify (opt-in)
+    //   REQUIRE_EMAIL_VERIFY  → 403 login gate (default in production)
+    //   otherwise             → login allowed, amber VerifyBanner shows
+    //                           (default in development — the demoable path)
     if (!user.emailVerifiedAt) {
-      if (env.nodeEnv === "development") {
+      if (env.devAutoVerify) {
         user.emailVerifiedAt = new Date();
         await user.save();
-      } else {
+      } else if (env.requireEmailVerify) {
         throw new AppError(
           "Please verify your email address before logging in. Check your inbox (and spam folder).",
           403
@@ -193,53 +137,20 @@ const login = async (req, res, next) => {
 
     if (!match) {
       // Increment failed attempts, lock if threshold reached
-      user.failedLoginAttempts += 1;
-      if (user.failedLoginAttempts >= MAX_LOGIN_ATTEMPTS) {
-        user.lockUntil = new Date(Date.now() + LOCK_TIME_MS);
-      }
+      registerFailedLoginAttempt(user);
       await user.save();
       // If now locked, return the locked message; otherwise the generic invalid
-      throw new AppError(user.isLocked ? LOCKED : INVALID, user.isLocked ? 423 : 401);
+      throw new AppError(
+        user.isLocked ? LOGIN_ERRORS.LOCKED : LOGIN_ERRORS.INVALID,
+        user.isLocked ? 423 : 401
+      );
     }
 
-    // -----------------------------------------------------------------
     // MFA (TOTP) verification — runs only for accounts with MFA enabled.
-    // Missing/invalid token → 401 with a recognizable code so the frontend
-    // can render the MFA input step instead of a generic "bad credentials".
-    // -----------------------------------------------------------------
     if (user.mfaEnabled) {
       // Re-select the hidden MFA fields
       const mfaUser = await User.findById(user._id).select("+mfaSecret +mfaRecoveryCodes");
-      const supplied = (value.mfaToken || "").trim();
-
-      let ok = false;
-      if (supplied && mfaUser.mfaSecret) {
-        ok = totp.verifyTotp(mfaUser.mfaSecret, supplied);
-        // Fall back to single-use recovery codes (each works once, then is burned)
-        if (!ok && supplied.includes("-") && mfaUser.mfaRecoveryCodes?.length) {
-          if (totp.matchRecoveryCode(mfaUser.mfaRecoveryCodes, supplied)) {
-            ok = true;
-            mfaUser.mfaRecoveryCodes = mfaUser.mfaRecoveryCodes.filter(
-              (h) => h !== totp.sha256(supplied.trim().toUpperCase())
-            );
-            await mfaUser.save();
-          }
-        }
-      }
-
-      if (!ok) {
-        // Count MFA failures toward the brute-force lockout too
-        user.failedLoginAttempts += 1;
-        if (user.failedLoginAttempts >= MAX_LOGIN_ATTEMPTS) {
-          user.lockUntil = new Date(Date.now() + LOCK_TIME_MS);
-        }
-        await user.save();
-        throw new AppError(
-          user.isLocked ? LOCKED : "MFA verification required",
-          user.isLocked ? 423 : 401,
-          [{ code: user.isLocked ? "account_locked" : "mfa_required" }]
-        );
-      }
+      await verifyMfaLogin(user, mfaUser, value.mfaToken);
     }
 
     // Success — reset counters
@@ -249,14 +160,7 @@ const login = async (req, res, next) => {
 
     // Issue refresh token and store its hash so we can detect reuse later
     const { token: refreshToken } = signRefreshToken(user);
-    user.refreshTokens.push({
-      token: hashToken(refreshToken),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    });
-    // Cap stored refresh tokens to last 5
-    if (user.refreshTokens.length > 5) {
-      user.refreshTokens = user.refreshTokens.slice(-5);
-    }
+    storeRefreshToken(user, refreshToken);
     await user.save();
 
     const token = signToken(user);
@@ -292,11 +196,7 @@ const logout = async (req, res, next) => {
 // ---------------------------------------------------------------------
 const changePassword = async (req, res, next) => {
   try {
-    const { error, value } = changePasswordSchema.validate(req.body, {
-      abortEarly: false,
-      stripUnknown: true,
-    });
-    if (error) throw new AppError("Validation error", 400, error.details.map((d) => d.message));
+    const value = validateOrThrow(changePasswordSchema, req.body);
 
     const { currentPassword, newPassword } = value;
 
@@ -313,120 +213,19 @@ const changePassword = async (req, res, next) => {
     user.password = await bcrypt.hash(newPassword, env.bcryptSaltRounds);
     // Invalidate all other sessions (current client will receive new token below)
     user.tokenVersion += 1;
-    // Wipe refresh tokens — the new token issued below carries a fresh pair
+    // Wipe refresh tokens, then stage the fresh pair — ONE save instead of the
+    // previous save→push→save sequence (the first save persisted a user with
+    // zero valid refresh tokens; a crash between the two saves would have
+    // logged the user out of every session with no recovery path).
     user.refreshTokens = [];
-    await user.save();
-
     const token = signToken(user);
     const { token: refreshToken } = signRefreshToken(user);
-    user.refreshTokens.push({
-      token: hashToken(refreshToken),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    });
+    storeRefreshToken(user, refreshToken);
     await user.save();
 
     res.status(200).json({
       success: true,
       data: { message: "Password changed successfully", token, refreshToken },
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ---------------------------------------------------------------------
-// Update profile image (multipart file upload) — NEW preferred endpoint.
-// Validates magic bytes, stores via storage service (disk or S3), saves
-// only a short URL in the user document. GET /auth/avatar/:filename serves
-// it publicly (avatars are not secret — they appear in comment threads).
-// ---------------------------------------------------------------------
-const uploadAvatar = async (req, res, next) => {
-  try {
-    if (!req.file) throw new AppError("No image uploaded (field name: `file`)", 400);
-
-    const ext = path.extname(req.file.originalname || "").toLowerCase();
-    const magic = AVATAR_MAGIC[ext] || [];
-    const header = req.file.buffer.slice(0, 8);
-    if (magic.length && !magic.some((m) => header.slice(0, m.length).equals(m))) {
-      throw new AppError("File content does not match its extension", 400);
-    }
-
-    const filename = `${crypto.randomUUID()}${ext}`;
-    await storage.save(req.file.buffer, `avatars/${filename}`, req.file.mimetype);
-
-    const user = await User.findById(req.user);
-    if (!user) throw new AppError("User not found", 404);
-
-    // Best-effort cleanup of the previous avatar file
-    const oldUrl = user.profileImage || "";
-    const oldMatch = oldUrl.match(/\/avatar\/([a-zA-Z0-9-]+\.[a-z]+)$/);
-    if (oldMatch) await storage.delete(`avatars/${oldMatch[1]}`).catch(() => {});
-
-    user.profileImage = `/api/auth/avatar/${filename}`;
-    await user.save();
-
-    res.status(200).json({
-      success: true,
-      data: { message: "Profile image updated", user: publicUser(user) },
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-// GET /auth/avatar/:filename — public read (content-type pinned to the
-// extension allowlist + nosniff, so an uploaded file can never execute)
-const getAvatar = async (req, res, next) => {
-  try {
-    const { filename } = req.params;
-    if (!filename.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(png|jpe?g|webp|gif)$/i)) {
-      throw new AppError("Invalid filename", 400);
-    }
-    const key = `avatars/${filename.toLowerCase()}`;
-    if (!(await storage.exists(key))) throw new AppError("Avatar not found", 404);
-
-    const ext = path.extname(filename).toLowerCase();
-    res.setHeader("Content-Type", AVATAR_TYPES[ext] || "application/octet-stream");
-    res.setHeader("X-Content-Type-Options", "nosniff");
-    res.setHeader("Cache-Control", "private, max-age=86400");
-
-    const stream = await storage.createReadStream(key);
-    stream.on("error", () => res.status(500).end());
-    stream.pipe(res);
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ---------------------------------------------------------------------
-// Update profile image (LEGACY base64 endpoint) — kept for backward
-// compatibility with older clients. Limit reduced to 512KB; new clients
-// should use POST /auth/avatar (multipart) instead.
-// ---------------------------------------------------------------------
-const updateProfileImage = async (req, res, next) => {
-  try {
-    const { profileImage } = req.body;
-    if (!profileImage) throw new AppError("Profile image is required", 400);
-
-    // Match data:image/<type>;base64,<data>
-    const match = profileImage.match(/^data:image\/(png|jpeg|jpg|webp|gif);base64,(.+)$/);
-    if (!match) throw new AppError("Invalid image format. Allowed: png, jpeg, webp, gif", 400);
-
-    const buffer = Buffer.from(match[2], "base64");
-    const MAX_SIZE = 512 * 1024; // 512 KB (was 2MB — data-URIs bloat every response)
-    if (buffer.length > MAX_SIZE) {
-      throw new AppError("Image too large. Maximum 512 KB (or use the file-upload endpoint).", 413);
-    }
-
-    const user = await User.findById(req.user);
-    if (!user) throw new AppError("User not found", 404);
-
-    user.profileImage = profileImage;
-    await user.save();
-
-    res.status(200).json({
-      success: true,
-      data: { message: "Profile image updated", user: publicUser(user) },
     });
   } catch (err) {
     next(err);
@@ -446,11 +245,7 @@ const updateProfileImage = async (req, res, next) => {
 // ---------------------------------------------------------------------
 const updateProfile = async (req, res, next) => {
   try {
-    const { error, value } = updateProfileSchema.validate(req.body, {
-      abortEarly: false,
-      stripUnknown: true,
-    });
-    if (error) throw new AppError("Validation error", 400, error.details.map((d) => d.message));
+    const value = validateOrThrow(updateProfileSchema, req.body);
 
     const user = await User.findById(req.user);
     if (!user) throw new AppError("User not found", 404);
@@ -519,182 +314,8 @@ const getMe = async (req, res, next) => {
   }
 };
 
-// ---------------------------------------------------------------------
-// Admin: get all users with pagination + search (prevents loading the
-// entire users collection on large deployments).
-// ---------------------------------------------------------------------
-const getAllUsers = async (req, res, next) => {
-  try {
-    const page = Math.max(1, parseInt(req.query.page || "1", 10));
-    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit || "20", 10)));
-    const skip = (page - 1) * limit;
-    const { role, status, search, team } = req.query;
-
-    const filter = {};
-    // Accepts single role (?role=admin) or comma-separated (?role=admin,agent)
-    if (role) {
-      const roles = role.split(",").map((r) => r.trim()).filter(Boolean);
-      filter.role = roles.length === 1 ? roles[0] : { $in: roles };
-    }
-    if (status) filter.status = status;
-    if (team) filter.team = team;
-    if (search) {
-      const escaped = String(search).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      filter.$or = [
-        { name: { $regex: escaped, $options: "i" } },
-        { email: { $regex: escaped, $options: "i" } },
-      ];
-    }
-
-    const [users, total] = await Promise.all([
-      User.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
-      User.countDocuments(filter),
-    ]);
-
-    res.status(200).json({
-      success: true,
-      data: {
-        users: users.map(publicUser),
-        pagination: {
-          page,
-          limit,
-          total,
-          totalPages: Math.ceil(total / limit),
-          hasNext: page * limit < total,
-          hasPrev: page > 1,
-        },
-      },
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ---------------------------------------------------------------------
-// Admin: toggle user active/suspended status
-// ---------------------------------------------------------------------
-const toggleUserStatus = async (req, res, next) => {
-  try {
-    const { userId } = req.params;
-    if (!userId.match(/^[0-9a-fA-F]{24}$/)) throw new AppError("Invalid user id", 400);
-
-    if (userId === req.user) throw new AppError("You cannot suspend your own account", 400);
-
-    const user = await User.findById(userId);
-    if (!user) throw new AppError("User not found", 404);
-
-    user.status = user.status === "active" ? "suspended" : "active";
-    // If suspending — invalidate their tokens immediately
-    if (user.status === "suspended") user.tokenVersion += 1;
-    await user.save();
-
-    res.status(200).json({
-      success: true,
-      data: { message: `User ${user.status}`, user: publicUser(user) },
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ---------------------------------------------------------------------
-// Admin: delete user (cannot delete self).
-// Cascade: nullify `user`/`assignedTo`/`resolvedBy` refs on tickets
-// (preserves audit trail), delete the user's comments, delete notifications
-// addressed to them, and detach them as KB article author.
-// ---------------------------------------------------------------------
-const deleteUser = async (req, res, next) => {
-  try {
-    const { userId } = req.params;
-    if (!userId.match(/^[0-9a-fA-F]{24}$/)) throw new AppError("Invalid user id", 400);
-    if (userId === req.user) throw new AppError("You cannot delete your own account", 400);
-
-    const user = await User.findByIdAndDelete(userId);
-    if (!user) throw new AppError("User not found", 404);
-
-    // Cascade — run in parallel:
-    // 1. Nullify refs on tickets where the user is creator/assignee/resolver.
-    //    We nullify rather than delete so the audit history is preserved.
-    // 2. Delete the user's comments.
-    // 3. Delete notifications addressed to the user.
-    // 4. Detach the user as KB article author (keep the article, set author=null).
-    await Promise.all([
-      Ticket.updateMany(
-        { user: userId },
-        { $set: { user: null } }
-      ),
-      Ticket.updateMany(
-        { assignedTo: userId },
-        { $set: { assignedTo: null } }
-      ),
-      Ticket.updateMany(
-        { resolvedBy: userId },
-        { $set: { resolvedBy: null } }
-      ),
-      Comment.deleteMany({ user: userId }),
-      Notification.deleteMany({
-        $or: [{ recipient: userId }, { sender: userId }],
-      }),
-      KBArticle.updateMany(
-        { author: userId },
-        { $unset: { author: 1 } }
-      ),
-    ]);
-
-    res.status(200).json({ success: true, data: { message: "User deleted successfully" } });
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ---------------------------------------------------------------------
-// Admin: update a user's role and/or team.
-// Needed now that the system has THREE roles (user / agent / admin) —
-// without it, nobody could ever become an agent.
-// Guards: cannot change your own role (lock-out protection) and cannot
-// demote the last active admin (keeps at least one admin able to manage).
-// ---------------------------------------------------------------------
-const updateUserRole = async (req, res, next) => {
-  try {
-    const schema = Joi.object({
-      role: Joi.string().valid("user", "agent", "admin"),
-      team: Joi.string().allow("").max(50).trim(),
-    }).min(1);
-    const { error, value } = schema.validate(req.body, { abortEarly: false, stripUnknown: true });
-    if (error) throw new AppError("Validation error", 400, error.details.map((d) => d.message));
-
-    const { userId } = req.params;
-    if (!userId.match(/^[0-9a-fA-F]{24}$/)) throw new AppError("Invalid user id", 400);
-    if (userId === req.user) throw new AppError("You cannot change your own role/team", 400);
-
-    const user = await User.findById(userId);
-    if (!user) throw new AppError("User not found", 404);
-
-    // Guard: never demote the last active admin
-    if (value.role && value.role !== "admin" && user.role === "admin") {
-      const otherAdmins = await User.countDocuments({
-        role: "admin",
-        status: "active",
-        _id: { $ne: user._id },
-      });
-      if (otherAdmins === 0) {
-        throw new AppError("Cannot demote the last active admin", 400);
-      }
-    }
-
-    if (value.role) {
-      user.role = value.role;
-      // Role change invalidates existing sessions (JWT carries the old role)
-      user.tokenVersion += 1;
-    }
-    if (value.team !== undefined) user.team = value.team;
-    await user.save();
-
-    res.status(200).json({ success: true, data: { user: publicUser(user) } });
-  } catch (err) {
-    next(err);
-  }
-};
+// Admin user management (getAllUsers / toggleUserStatus / updateUserRole /
+// deleteUser) lives in controller/userManagementController.js
 
 module.exports = {
   register,
@@ -707,8 +328,4 @@ module.exports = {
   avatarUpload,
   updateProfile,
   getMe,
-  getAllUsers,
-  toggleUserStatus,
-  updateUserRole,
-  deleteUser,
 };

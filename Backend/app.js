@@ -4,13 +4,17 @@
  * Signature: JMLIT-4FC9A6FEFD */
 // =====================================================================
 // App entry — security middleware, routes, DB connection, graceful shutdown
+//
+// Structure (split out for maintainability):
+//   middleware/requestContext.js  — x-request-id + attribution headers
+//   config/rateLimiters.js        — global + auth rate limiters
+//   config/gracefulShutdown.js    — SIGTERM/SIGINT/unhandled-rejection teardown
 // =====================================================================
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const compression = require("compression");
 const morgan = require("morgan");
-const rateLimit = require("express-rate-limit");
 const mongoSanitize = require("express-mongo-sanitize");
 const hpp = require("hpp");
 const mongoose = require("mongoose");
@@ -18,41 +22,25 @@ const mongoose = require("mongoose");
 const env = require("./config/env");
 const ATTRIBUTION = require("./config/attribution");
 const errorMiddleware = require("./middleware/errorMiddleware");
+const { requestId, attributionHeaders } = require("./middleware/requestContext");
+const { globalLimiter, authLimiter, skipHealthChecks } = require("./config/rateLimiters");
+const { createShutdown } = require("./config/gracefulShutdown");
 const logger = require("./utils/logger");
-const crypto = require("crypto");
 
 const app = express();
 
 // ---------------------------------------------------------------------
-// Request ID — every request gets an x-request-id header (and req.id),
-// which the structured logger and error responses can reference. Essential
-// for correlating a user complaint to a specific log line.
+// Request context + attribution, then the middleware chain
 // ---------------------------------------------------------------------
-app.use((req, res, next) => {
-  req.id = crypto.randomUUID();
-  res.setHeader("x-request-id", req.id);
-  next();
-});
-
-// ---------------------------------------------------------------------
-// Attribution layer (see LICENSE + NOTICE) — stamped on EVERY API response.
-// Visible to anyone inspecting network traffic in browser devtools.
-// ---------------------------------------------------------------------
-app.use((req, res, next) => {
-  res.setHeader("x-authored-by", ATTRIBUTION.author);
-  res.setHeader("x-app-source", ATTRIBUTION.url);
-  res.setHeader("x-app-signature", ATTRIBUTION.signature);
-  next();
-});
+app.use(requestId);
+app.use(attributionHeaders);
 
 // Boot signature in the server log — identifies the codebase on any host.
 logger.info(
   `${ATTRIBUTION.product} · © ${new Date().getFullYear()} ${ATTRIBUTION.author} (${ATTRIBUTION.url}) · sig:${ATTRIBUTION.signature} · ${ATTRIBUTION.license}`
 );
 
-// ---------------------------------------------------------------------
 // Trust proxy (if behind reverse proxy / load balancer)
-// ---------------------------------------------------------------------
 app.set("trust proxy", 1);
 
 // ---------------------------------------------------------------------
@@ -108,45 +96,14 @@ app.use(compression());
 // HTTP logging
 app.use(
   morgan(env.isProd ? "combined" : "dev", {
-    skip: (req) => req.path === "/api/health" || req.path === "/api/v1/health",
+    skip: skipHealthChecks,
   })
 );
 
 // ---------------------------------------------------------------------
-// Rate limiting — two tiers:
-//   1. globalLimiter  — RATE_LIMIT_MAX (default 500) per IP / 15 min across
-//      the whole /api surface. A polling SPA comfortably fits in 500; the old
-//      default of 100 throttled normal browsing.
-//   2. authLimiter    — AUTH_RATE_LIMIT_MAX (default 20) per IP / 15 min,
-//      mounted ONLY on the credential-bearing auth routes (login, register,
-//      forgot-password, reset-password, verify-email, resend-verification —
-//      see routes/authRoutes.js + routes/authExtrasRoutes.js). Tight enough
-//      to make brute-forcing passwords/tokens impractical, without touching
-//      the rest of the API.
+// Rate limiting — see config/rateLimiters.js for the two-tier rationale
 // ---------------------------------------------------------------------
-const globalLimiter = rateLimit({
-  windowMs: env.rateLimitWindowMs,
-  max: env.rateLimitMax,
-  standardHeaders: true,
-  legacyHeaders: false,
-  // Don't rate-limit the health check endpoint — Kubernetes liveness/readiness
-  // probes hit it every few seconds and would otherwise exhaust the budget,
-  // causing the orchestrator to mark the pod unhealthy and restart it.
-  skip: (req) => req.path === "/api/health" || req.path === "/api/v1/health",
-  message: { success: false, error: { message: "Too many requests, please try again later." } },
-});
 app.use("/api", globalLimiter);
-
-const authLimiter = rateLimit({
-  windowMs: env.rateLimitWindowMs, // same 15-min window as the global limiter
-  max: env.authRateLimitMax, // default 20 — brute-force protection where it matters
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { success: false, error: { message: "Too many attempts. Please try again in a few minutes." } },
-  // Skip rate limiting entirely in test mode — integration tests fire many
-  // auth requests in rapid succession.
-  skip: (req) => process.env.NODE_ENV === "test",
-});
 
 // ---------------------------------------------------------------------
 // Health check (no auth, no rate limit hit beyond global)
@@ -230,9 +187,7 @@ app.use((req, res) => {
   res.status(404).json({ success: false, error: { message: "Route not found" } });
 });
 
-// ---------------------------------------------------------------------
 // Error middleware (must be last)
-// ---------------------------------------------------------------------
 app.use(errorMiddleware);
 
 // ---------------------------------------------------------------------
@@ -261,65 +216,17 @@ async function startServer() {
       });
     });
 
-    // -----------------------------------------------------------------
     // WebSocket (socket.io)
-    // -----------------------------------------------------------------
     const { initSocket, closeSocket } = require("./socket");
     initSocket(server);
     logger.info("WebSocket initialized");
 
-    // -----------------------------------------------------------------
     // Background jobs — SLA monitor
-    // -----------------------------------------------------------------
     const { startSlaMonitor, stopSlaMonitor } = require("./services/slaMonitor");
     startSlaMonitor();
 
-    // -----------------------------------------------------------------
-    // Graceful shutdown — stop background jobs, close the SOCKET server
-    // (io.close also closes the wrapped HTTP server; server.close below is
-    // a fallback for when socket.io was never initialized), then Mongo.
-    // -----------------------------------------------------------------
-    let shuttingDown = false;
-    const shutdown = (signal) => {
-      if (shuttingDown) return; // second SIGINT during shutdown — ignore
-      shuttingDown = true;
-      logger.info(`${signal} received, shutting down gracefully...`);
-      stopSlaMonitor();
-      closeSocket().then(() => {
-        // Fallback for the no-socket path (tests / bare HTTP)
-        server.close(() => {});
-        mongoose.connection
-          .close(false)
-          .then(() => {
-            logger.info("MongoDB connection closed");
-            process.exit(0);
-          })
-          .catch((err) => {
-            logger.error("Error closing MongoDB", { err: err.message });
-            process.exit(1);
-          });
-      });
-
-      // Force-close after 10s
-      setTimeout(() => {
-        logger.error("Forcing shutdown after timeout");
-        process.exit(1);
-      }, 10000).unref();
-    };
-
-    process.on("SIGTERM", () => shutdown("SIGTERM"));
-    process.on("SIGINT", () => shutdown("SIGINT"));
-    // Node 15+ defaults to crashing on unhandled rejections (recommended —
-    // the process state is unknown after one). We log then exit to surface
-    // the bug rather than silently continuing in a potentially corrupt state.
-    process.on("unhandledRejection", (reason, promise) => {
-      logger.error("Unhandled Rejection", { reason: String(reason) });
-      shutdown("unhandledRejection");
-    });
-    process.on("uncaughtException", (err) => {
-      logger.error("Uncaught Exception", { err: err.message, stack: err.stack });
-      shutdown("uncaughtException");
-    });
+    // Graceful shutdown wiring
+    createShutdown({ server, stopSlaMonitor, closeSocket });
   } catch (err) {
     logger.error("Failed to start server", { err: err.message });
     process.exit(1);

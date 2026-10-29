@@ -5,11 +5,14 @@
 // Locale-aware date/time formatting — every screen imports from HERE so
 // Arabic users get Arabic dates and relative times ("منذ ٥ دقائق"), not
 // hardcoded en-GB output.
+// Default mirrors the i18n provider: Arabic-first. (Previously this fell
+// back to "en" while i18n defaulted to "ar" — a fresh profile could see
+// English dates on first paint against an Arabic UI.)
 const cachedLang = () => {
   try {
-    return localStorage.getItem("app_language") === "ar" ? "ar" : "en";
+    return localStorage.getItem("app_language") === "en" ? "en" : "ar";
   } catch {
-    return "en";
+    return "ar";
   }
 };
 

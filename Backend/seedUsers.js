@@ -223,8 +223,15 @@ async function seedUsers() {
   let adminPassword = process.env.ADMIN_PASSWORD || "password123";
 
   try {
-    await mongoose.connect(env.dbUrl);
-    console.log("✅ Connected to MongoDB");
+    // FIX(QA-rec-5b / seed-audit): only manage the connection when we are
+    // the host. If a test harness (or any embedder) already connected
+    // mongoose, reuse THAT connection — and don't disconnect it at the end
+    // (our old disconnect() killed the host's in-memory DB mid-suite).
+    const wasConnected = mongoose.connection.readyState === 1;
+    if (!wasConnected) {
+      await mongoose.connect(env.dbUrl);
+      console.log("✅ Connected to MongoDB");
+    }
 
     // Clear existing tickets & users if requested or ensure missing ones created
     const existingAdmin = await User.findOne({ email: adminEmail });
@@ -248,8 +255,14 @@ async function seedUsers() {
     // Keyed by NAME — sampleTickets reference creators by name
     createdUsers[adminUserObj.name] = adminUserObj;
 
+    // FIX(QA-rec-5): was findOne PER sample user (N sequential round-trips).
+    // One $in batch fetch now; the loop only creates what's missing.
+    const existingUsersByEmail = {};
+    for (const u of await User.find({ email: { $in: sampleUsers.map((s) => s.email) } })) {
+      existingUsersByEmail[u.email] = u;
+    }
     for (const u of sampleUsers) {
-      let userObj = await User.findOne({ email: u.email });
+      let userObj = existingUsersByEmail[u.email];
       if (!userObj) {
         const hash = await bcrypt.hash(u.password, env.bcryptSaltRounds);
         userObj = await User.create({
@@ -263,9 +276,14 @@ async function seedUsers() {
     }
 
     // Seed the company directory (links tickets to real customer entities)
+    // FIX(QA-rec-5): same batch pattern for companies — one $in lookup.
     const companyIdByName = {};
+    const existingCompanies = {};
+    for (const c of await Company.find({ name: { $in: sampleCompanies.map((s) => s.name) } })) {
+      existingCompanies[c.name] = c;
+    }
     for (const c of sampleCompanies) {
-      let companyObj = await Company.findOne({ name: c.name });
+      let companyObj = existingCompanies[c.name];
       if (!companyObj) {
         companyObj = await Company.create(c);
         console.log(`✓ Created company: ${c.name}`);
@@ -325,15 +343,22 @@ async function seedUsers() {
     console.log(`   Agent : agent.laila@example.com / Demo@1234`);
     console.log(`   User  : mo.jameel.official@gmail.com / password123`);
     console.log(`   User  : ahmed.hassan@example.com / Demo@1234`);
-    process.exit(0);
+    // FIX(QA-env): never process.exit() inside an exported function — it
+    // kills any host process that required this module (e.g. test harness)
+    // and can truncate pending stdout writes. Only disconnect when WE opened
+    // the connection — a host-provided connection stays open for its owner.
+    if (!wasConnected) await mongoose.disconnect();
   } catch (err) {
-    console.error("❌ Seeding failed:", err.message);
-    process.exit(1);
+    // FIX(QA-env): rethrow instead of exit(1) so callers can handle it.
+    throw new Error(`Seeding failed: ${err.message}`);
   }
 }
 
 if (require.main === module) {
-  seedUsers();
+  seedUsers().catch((err) => {
+    console.error("❌ Seeding failed:", err.message);
+    process.exit(1);
+  });
 }
 
 module.exports = seedUsers;

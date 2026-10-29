@@ -5,6 +5,8 @@
 // Accessible modal — with focus trap, ESC to close, click-outside, ARIA roles
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+// FIX(QA-a11y-i18n): localized close button label (was hardcoded English)
+import { useI18n } from "../../i18n";
 
 export const Modal = ({
   open,
@@ -14,6 +16,7 @@ export const Modal = ({
   size = "md",
   closeOnOverlayClick = true,
 }) => {
+  const { t } = useI18n();
   const modalRef = useRef(null);
   const previouslyFocused = useRef(null);
 
@@ -115,7 +118,7 @@ export const Modal = ({
             </h2>
             <button
               onClick={onClose}
-              aria-label="Close dialog"
+              aria-label={t("common.close")}
               style={{
                 background: "none",
                 border: "none",

@@ -14,7 +14,7 @@ import { useI18n } from "../../i18n";
 import { usePageTitle } from "../../hooks";
 import { Skeleton } from "../../components/common/Skeleton";
 import EmptyState from "../../components/common/EmptyState";
-import { formatDate } from "../../utils/format";
+import { formatDate, formatSlaCountdown } from "../../utils/format";
 import { getStatusInfo, getPriorityInfo } from "../TicketsList/ticketConstants";
 import styles from "./AgentQueue.module.css";
 
@@ -89,7 +89,7 @@ function AgentQueue() {
             </p>
           </div>
           <button className="btn btn-primary btn-sm" onClick={() => navigate("/ticketslist")}>
-            {t("tickets.title")} <i className="fa-solid fa-arrow-right ms-1" aria-hidden="true"></i>
+            {t("tickets.title")} <i className={`fa-solid ${lang === "ar" ? "fa-arrow-left" : "fa-arrow-right"} ms-1`} aria-hidden="true"></i>
           </button>
         </div>
 
@@ -142,13 +142,16 @@ function AgentQueue() {
                   </span>
                   <span className={styles.rowNumber}>{tk.ticketNumber}</span>
                   <span className={styles.rowSubject}>{tk.subject || tk.product}</span>
-                  <span className={styles.rowPriority} style={{ color: priorityInfo.color, fontWeight: 600 }}>
-                    {t(`status.${tk.priority}`)}
+                  {/* QA-uiux (WCAG 1.4.3): ink shade — the vivid base color
+                      measured 2.1–3.8:1 as 12px text on the card. */}
+                  <span className={styles.rowPriority} style={{ color: priorityInfo.ink, fontWeight: 600 }}>
+                    {t(`priority.${tk.priority}`)}
                   </span>
                   {tk.slaDueDate && !["resolved", "closed"].includes(tk.status) && (
                     <span className={slaOverdue(tk) ? styles.rowSlaLate : styles.rowSla}>
                       <i className="fa-regular fa-clock me-1" aria-hidden="true"></i>
-                      {slaOverdue(tk) ? t("common.overdue") : t("common.onTrack")}
+                      {/* FIX(QA-rec-3): real remaining/overdue time, not just a flag */}
+                      {formatSlaCountdown(tk.slaDueDate, t("common.overdue"))}
                     </span>
                   )}
                   <span className={styles.rowDate}>{formatDate(tk.createdAt, lang)}</span>
@@ -156,6 +159,20 @@ function AgentQueue() {
                 </button>
               );
             })
+          )}
+          {/* QA-deep: short queues left a bare card floating in white space —
+              a summary footer anchors the card and always offers the escape
+              hatch to the full (filterable) tickets list. */}
+          {!loading && tickets.length > 0 && (
+            <div className={styles.listFooter}>
+              <span className={styles.listFooterText}>
+                {t("queue.showing", { a: tickets.length })}
+              </span>
+              <button className={styles.listFooterBtn} onClick={() => navigate("/ticketslist")}>
+                {t("queue.openFullList")}
+                <i className={`fa-solid ${lang === "ar" ? "fa-arrow-left" : "fa-arrow-right"} ms-1`} aria-hidden="true"></i>
+              </button>
+            </div>
           )}
         </div>
       </div>

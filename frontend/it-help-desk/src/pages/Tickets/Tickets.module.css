@@ -51,6 +51,39 @@
 }
 .formRow:last-child { border-bottom: none; }
 
+/* ===== QA-deep: right column of the create form (subject / description) =====
+   Mirrors the left column's .formRow rhythm: same separators, same 140px
+   label lane, same paddings — previously Bootstrap-default labels + ad-hoc
+   padding made the two halves of the form look like different designs. */
+.formCol {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.formRowTop {
+  align-items: flex-start;
+  flex: 1;
+}
+
+.formRowTop .formLabel {
+  /* align the label with the textarea's first text line (0.65rem padding
+     + 1px border), not with the box's top edge */
+  margin-top: calc(0.65rem + 1px);
+}
+
+.descCol {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.descCol .customTextarea {
+  flex: 1;
+  min-height: 11rem;
+}
+
 .formLabel {
   width: 140px;
   font-weight: 700;
@@ -60,10 +93,26 @@
   margin-bottom: 0;
 }
 
+/* QA-nt4: the Employee row's helper <small> sat BESIDE the input in the
+   same flex line — on phones the 178px hint squeezed the disabled input
+   to ~104px and clipped "Mohammed Jameel" mid-name (scrollWidth > clientW).
+   Below 768px the hint wraps to its own line so the input takes the full
+   row width; on ≥769px the hint keeps its inline slot (input is wide
+   enough there). */
+.formHint {
+  flex-shrink: 0;
+}
+
 .formRow select,
 .formRow input,
 .customTextarea {
   flex: 1;
+  /* QA-nt5: at mid widths (laptop 1366 → left column ≈ 460px) the Employee
+     row's 178px inline helper crushed this input to 113px and clipped the
+     value mid-name. A floor of 170px + the row's flex-wrap lets the helper
+     drop to its own line at ANY width that cannot host both, while wide
+     screens keep the helper inline. */
+  min-width: 170px;
   background: var(--bg-input) !important;
   border: 1px solid var(--border) !important;
   border-radius: 10px !important;
@@ -85,7 +134,9 @@
   padding: 6px 20px;
   border: 1px solid var(--border);
   background: var(--bg-input);
-  color: var(--text-dark) !important;
+  /* QA-uiux: !important dropped so the ACTIVE chip's inline theme-aware
+     ink (WCAG 1.4.3) can win — the class below only adds the ring. */
+  color: var(--text-dark);
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: 600;
@@ -101,7 +152,8 @@
   cursor: not-allowed;
 }
 .priorityActive {
-  color: white !important;
+  /* QA-uiux (WCAG 1.4.3): `color: white !important` removed — the inline
+     style now sets the theme-aware ink on the 15% tinted chip. */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
@@ -207,7 +259,10 @@
   margin: 1.25rem 2rem 1.5rem;
   padding: 12px 18px;
   background: var(--bg-input);
-  border-left: 4px solid var(--orange);
+  /* QA-nt2: physical `border-left` left the orange accent on the LEFT in
+     Arabic RTL where reading starts right — logical inline-start flips it
+     to the right edge in RTL and keeps it left in LTR. */
+  border-inline-start: 4px solid var(--orange);
   border-radius: 10px;
   font-size: 0.88rem;
   color: var(--text-dark);
@@ -225,13 +280,19 @@
   flex: 1;
   height: 52px;
   background: var(--orange);
-  color: white;
+  /* QA-uiux (WCAG 1.4.3): white on #f2994a was 2.23:1 — brand navy ink on
+     the orange reads 6.09:1 and matches the primary button family. */
+  color: #23256b;
   border: none;
   font-weight: 700;
   font-size: 1.05rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  border-bottom-left-radius: var(--radius);
+  /* QA-nt3: physical `border-bottom-left-radius` rounded the INNER meeting
+     corner in RTL (both buttons curved away from each other at the card's
+     bottom center) — logical end-start keeps the rounding on this button's
+     OUTER corner in both directions. */
+  border-end-start-radius: var(--radius);
 }
 .btnClose:hover:not(:disabled) { background: var(--orange-dark); }
 .btnClose:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -249,7 +310,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-bottom-right-radius: var(--radius);
+  /* QA-nt3: logical end-end mirrors btnClose — the OUTER corner rounds in
+     both LTR and RTL instead of the inner meeting edge in RTL. */
+  border-end-end-radius: var(--radius);
 }
 .btnSubmit:hover:not(:disabled) { background: var(--primary-light); }
 .btnSubmit:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -257,9 +320,19 @@
 @media (max-width: 768px) {
   .formRow { padding: 0.85rem 1rem; flex-wrap: wrap; }
   .formLabel { width: 100%; margin-bottom: 0.25rem; }
+  .formHint { flex-basis: 100%; margin-top: 0.3rem; }
   .cardTitle { padding: 1rem; font-size: 1rem; }
   .attachmentSection { padding: 1rem; }
   .slaNotice { margin: 0 1rem 1rem; }
+}
+
+/* QA-nt6: on phones the four priority chips wrapped 3+1 — "Urgent" sat
+   orphaned on its own line (measured 616px row with 3 pills, 659px row
+   with 1). A 2x2 equal grid fills the row width evenly instead; tablets
+   keep the natural single line (4 chips fit side by side there). */
+@media (max-width: 480px) {
+  .pillWrap { flex: 1 1 100%; }
+  .priorityBtn { flex: 1 1 calc(50% - 0.25rem); text-align: center; }
 }
 
 /* ===== KB deflection suggestions ===== */

@@ -14,8 +14,11 @@ const ADMIN_PASSWORD = "password123";
 test.describe("UI features", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/login");
+    // FIX(e2e): wait for the lazy-loaded toggle instead of probing (isVisible
+    // ran before React mounted and silently skipped the click).
     const en = page.locator('button:has-text("EN")').first();
-    if (await en.isVisible()) await en.click();
+    await en.waitFor({ state: "visible", timeout: 10_000 });
+    await en.click();
     await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
 
     await page.fill('input[type="email"]', ADMIN_EMAIL);
@@ -95,8 +98,10 @@ test.describe("UI features", () => {
 
     // Click the Password tab
     await page.click('[role="tab"]:has-text("Password")');
-    await expect(page.locator('label:has-text("Current Password")')).toBeVisible();
-    await expect(page.locator('label:has-text("New Password")')).toBeVisible();
+    await expect(page.locator('label[for="pw-current"]')).toBeVisible();
+    // EXACT text match — :has-text("New Password") also matched the
+    // "Confirm New Password" label (substring) and failed strict mode.
+    await expect(page.locator('label[for="pw-new"]')).toBeVisible();
   });
 
   test("users page is accessible to admin", async ({ page }) => {

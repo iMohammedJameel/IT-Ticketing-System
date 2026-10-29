@@ -23,6 +23,9 @@ beforeAll(async () => {
   process.env.JWT_SECRET = "test_jwt_secret_at_least_32_chars_long";
   process.env.JWT_REFRESH_SECRET = "test_refresh_secret_at_least_32_chars";
   process.env.NODE_ENV = "test";
+  // FIX(QA-009b): the email-verify login gate is now env-controlled
+  // (strict in prod, open in dev). Tests exercise the strict path.
+  process.env.REQUIRE_EMAIL_VERIFY = "true";
   // Disable rate limiting during tests — the integration tests make
   // many auth requests in rapid succession and would hit the limiter
   process.env.RATE_LIMIT_MAX = "10000";

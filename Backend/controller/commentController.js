@@ -7,16 +7,13 @@ const Comment = require("../models/Comment");
 const Ticket = require("../models/Ticket");
 const { commentSchema } = require("./validation/TicketValidation");
 const { AppError } = require("../middleware/errorMiddleware");
+const { validateOrThrow } = require("../utils/validation");
 const notificationService = require("../services/notificationService");
 const { isStaff } = require("../utils/roles");
 
 const addComment = async (req, res, next) => {
   try {
-    const { error, value } = commentSchema.validate(req.body, {
-      abortEarly: false,
-      stripUnknown: true,
-    });
-    if (error) throw new AppError("Validation error", 400, error.details.map((d) => d.message));
+    const value = validateOrThrow(commentSchema, req.body);
 
     const { ticketId } = req.params;
     if (!ticketId.match(/^[0-9a-fA-F]{24}$/)) throw new AppError("Invalid ticket id", 400);
@@ -107,11 +104,7 @@ const getComments = async (req, res, next) => {
 
 const updateComment = async (req, res, next) => {
   try {
-    const { error, value } = commentSchema.validate(req.body, {
-      abortEarly: false,
-      stripUnknown: true,
-    });
-    if (error) throw new AppError("Validation error", 400, error.details.map((d) => d.message));
+    const value = validateOrThrow(commentSchema, req.body);
 
     const comment = await Comment.findById(req.params.id);
     if (!comment) throw new AppError("Comment not found", 404);

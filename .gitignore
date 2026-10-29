@@ -21,20 +21,11 @@ logs/
 coverage/
 playwright-report/
 test-results/
-.nyc_output/
-*.lcov
+blob-report/
 
-# ── Caches ────────────────────────────────────
-.cache/
-.vite/
-*.eslintcache
-*.tsbuildinfo
-
-# ── OS / editor ───────────────────────────────
+# ── OS / editor noise ─────────────────────────
 .DS_Store
 Thumbs.db
+*.swp
 .idea/
-.vscode/*
-!.vscode/extensions.json
-*.suo
-*.sw?
+.vscode/

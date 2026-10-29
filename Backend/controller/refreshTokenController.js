@@ -11,6 +11,7 @@ const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { AppError } = require("../middleware/errorMiddleware");
+const { validateOrThrow } = require("../utils/validation");
 const env = require("../config/env");
 const Joi = require("joi");
 
@@ -42,11 +43,7 @@ const hashToken = (t) => crypto.createHash("sha256").update(t).digest("hex");
 // ---------------------------------------------------------------------
 const refresh = async (req, res, next) => {
   try {
-    const { error, value } = refreshSchema.validate(req.body, {
-      abortEarly: false,
-      stripUnknown: true,
-    });
-    if (error) throw new AppError("Validation error", 400, error.details.map((d) => d.message));
+    const value = validateOrThrow(refreshSchema, req.body);
 
     let payload;
     try {

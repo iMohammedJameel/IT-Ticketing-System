@@ -22,7 +22,8 @@
   align-items: center;
   gap: 8px;
   font-size: 0.72rem;
-  color: #6A7494;
+  /* QA-uiux (WCAG 1.4.3): #6A7494 was 4.09:1 on #F0F0FB — #5E688A = 4.86:1. */
+  color: #5E688A;
   min-width: 0;
 }
 .brandName {
@@ -33,7 +34,9 @@
 .sep { opacity: 0.45; }
 .brandFull { white-space: nowrap; }
 .version {
-  color: #9AA3C0;
+  /* QA-uiux (WCAG 1.4.3): #9AA3C0 was 2.22:1 on the page bg — #616B85 =
+     4.70:1 while keeping the subtle look. Dark override below. */
+  color: #616B85;
   font-size: 0.68rem;
 }
 
@@ -65,8 +68,9 @@
 [data-theme="dark"] .brandName { color: #d5d9ee; }
 [data-theme="dark"] .brandSide,
 [data-theme="dark"] .motto { color: #9aa2c2; }
+/* QA-uiux (WCAG 1.4.3): dark .version was 4.10:1 — #8189a8 = 5.45:1. */
 [data-theme="dark"] .version,
-[data-theme="dark"] .sep { color: #6d7494; }
+[data-theme="dark"] .sep { color: #8189a8; }
 
 @media (max-width: 767px) {
   .footer {

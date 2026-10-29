@@ -5,6 +5,7 @@
 // Canned response controller — staff read + usage counter, admin CRUD.
 const CannedResponse = require("../models/CannedResponse");
 const { AppError } = require("../middleware/errorMiddleware");
+const { validateOrThrow } = require("../utils/validation");
 const Joi = require("joi");
 
 const createSchema = Joi.object({
@@ -33,8 +34,7 @@ const list = async (req, res, next) => {
 // POST /canned-responses — admin
 const create = async (req, res, next) => {
   try {
-    const { error, value } = createSchema.validate(req.body, { abortEarly: false, stripUnknown: true });
-    if (error) throw new AppError("Validation error", 400, error.details.map((d) => d.message));
+    const value = validateOrThrow(createSchema, req.body);
 
     const response = await CannedResponse.create({ ...value, createdBy: req.user });
     res.status(201).json({ success: true, data: { response } });
@@ -47,8 +47,7 @@ const create = async (req, res, next) => {
 const update = async (req, res, next) => {
   try {
     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) throw new AppError("Invalid id", 400);
-    const { error, value } = updateSchema.validate(req.body, { abortEarly: false, stripUnknown: true });
-    if (error) throw new AppError("Validation error", 400, error.details.map((d) => d.message));
+    const value = validateOrThrow(updateSchema, req.body);
 
     const response = await CannedResponse.findByIdAndUpdate(req.params.id, value, { new: true, runValidators: true });
     if (!response) throw new AppError("Canned response not found", 404);

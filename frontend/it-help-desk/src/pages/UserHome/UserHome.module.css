@@ -101,6 +101,9 @@
   color: var(--primary);
   white-space: nowrap;
 }
+/* QA-uiux (WCAG 1.4.3): dark --primary on the dark card was ~3:1 —
+   lightened tone reads 6.3:1 in dark mode (same fix as the queue). */
+[data-theme="dark"] .rowNumber { color: #9fa5f5; }
 
 .rowSubject {
   flex: 1;
@@ -110,6 +113,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  /* FIX(QA-rtl-trunc): same as AgentQueue — EN subjects must ellipsize at
+     their own END, not be clipped from their start inside the RTL row. */
+  unicode-bidi: plaintext;
 }
 
 .rowSla {
@@ -119,7 +125,8 @@
 }
 .rowSlaLate {
   font-size: 0.72rem;
-  color: var(--status-open);
+  /* QA-uiux (WCAG 1.4.3): vivid #ef4444 was 3.76:1 at 11.5px — ink passes. */
+  color: var(--status-open-ink);
   font-weight: 700;
   white-space: nowrap;
 }

@@ -78,6 +78,11 @@ const ticketQuerySchema = Joi.object({
   unassigned: Joi.boolean(),
   // slaAtRisk=true → active tickets due within 4h (or already breached)
   slaAtRisk: Joi.boolean(),
+  // ADD(QA-rec-4): date range on createdAt. "from" inclusive, "to" EXCLUSIVE
+  // (client sends to = selected day + 1 so the whole day is covered).
+  // ISO-8601 date string ("2026-10-29" or full timestamp).
+  from: Joi.date().iso().max("now"),
+  to: Joi.date().iso(),
   search: Joi.string().max(200),
   page: Joi.number().integer().min(1).default(1),
   limit: Joi.number().integer().min(1).max(100).default(20),

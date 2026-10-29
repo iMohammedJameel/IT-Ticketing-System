@@ -7,20 +7,23 @@
 // that resolves to the semantic palette defined once in src/index.css — light and
 // dark themes included. Inline styles support var(), so components can use these
 // directly without importing hex values that drift per screen (the old bug).
+// QA-uiux (WCAG 1.4.3): `color` = vivid base for DOTS/ICONS/BORDERS;
+// `ink` = darkened (light theme) / lightened (dark theme) shade for TEXT on
+// tinted badge chips — the base colors measured 2.0–3.8:1 as badge text.
 import { formatDate, formatDateTime } from "../../utils/format";
 
 export const STATUS_OPTIONS = [
-  { value: "open", label: "Open", color: "var(--status-open)" },
-  { value: "in-progress", label: "In Progress", color: "var(--status-progress)" },
-  { value: "resolved", label: "Resolved", color: "var(--status-resolved)" },
-  { value: "closed", label: "Closed", color: "var(--status-closed)" },
+  { value: "open", label: "Open", color: "var(--status-open)", ink: "var(--status-open-ink)" },
+  { value: "in-progress", label: "In Progress", color: "var(--status-progress)", ink: "var(--status-progress-ink)" },
+  { value: "resolved", label: "Resolved", color: "var(--status-resolved)", ink: "var(--status-resolved-ink)" },
+  { value: "closed", label: "Closed", color: "var(--status-closed)", ink: "var(--status-closed-ink)" },
 ];
 
 export const PRIORITY_OPTIONS = [
-  { value: "low", label: "Low", color: "var(--prio-low)" },
-  { value: "medium", label: "Medium", color: "var(--prio-medium)" },
-  { value: "high", label: "High", color: "var(--prio-high)" },
-  { value: "urgent", label: "Urgent", color: "var(--prio-urgent)" },
+  { value: "low", label: "Low", color: "var(--prio-low)", ink: "var(--prio-low-ink)" },
+  { value: "medium", label: "Medium", color: "var(--prio-medium)", ink: "var(--prio-medium-ink)" },
+  { value: "high", label: "High", color: "var(--prio-high)", ink: "var(--prio-high-ink)" },
+  { value: "urgent", label: "Urgent", color: "var(--prio-urgent)", ink: "var(--prio-urgent-ink)" },
 ];
 
 export const FALLBACK_COMPANIES = [

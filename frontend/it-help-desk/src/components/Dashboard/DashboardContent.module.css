@@ -43,7 +43,10 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) 264px;
   gap: 36px;
-  align-items: start;
+  /* QA-uiux: was `start` — the right column ended 72px above the left one
+     (819px vs 747px) leaving a dead zone at the bottom-right on desktop.
+     Stretch + last-card-grow makes both columns end flush. */
+  align-items: stretch;
 }
 .sideCol {
   display: flex;
@@ -51,6 +54,12 @@
   gap: 18px;
   position: sticky;
   top: 12px;
+}
+/* QA-uiux: with .grid stretched, the LAST side card absorbs the extra row
+   height (its content is centered, so it just breathes) — both columns end
+   flush at the bottom on desktop. */
+.sideCol > :last-child {
+  flex: 1 0 auto;
 }
 
 /* ---------- shared card ---------- */
@@ -94,16 +103,38 @@
   gap: 5px;
   background: none;
   border: none;
-  padding: 2px 4px;
+  padding: 6px 8px;
+  /* QA-deep (WCAG 2.5.8): was ~19px tall on desktop — below the 24px target
+     minimum. 32px keeps the card header slim while staying comfortably
+     tappable at every viewport. */
+  min-height: 2rem;
+  margin-inline-end: -4px;
   font-size: 0.8rem;
   font-weight: 500;
-  color: #3B7DEB;
+  /* QA-uiux (WCAG 1.4.3): #3B7DEB was 3.95:1 on white (12.8px, need 4.5).
+     #2B6CE0 = 4.86:1; dark override below = 6.33:1. */
+  color: #2B6CE0;
   cursor: pointer;
   font-family: inherit;
   transition: color 0.15s ease;
 }
-.viewAll:hover { color: #2563EB; text-decoration: underline; }
+.viewAll:hover { color: #1F5BC9; text-decoration: underline; }
 .viewAll svg { width: 13px; height: 13px; }
+
+/* QA-uiux (WCAG 1.4.3): light-mode blue on dark card was 4.22:1 — use the
+   lightened link blue for dark cards (6.33:1). */
+[data-theme="dark"] .viewAll { color: #7B9DF5; }
+[data-theme="dark"] .viewAll:hover { color: #9AB5F8; }
+
+/* QA-visual (RTL): forward-pointing arrows (→) sit next to "view all" /
+   "contact support" labels and table-row chevrons. In the Arabic UI the
+   forward direction is LEFT, so mirror them under dir=rtl — mirrors the
+   conditional fa-arrow-left/right swaps used across the pages. */
+[dir="rtl"] .viewAll svg,
+[dir="rtl"] .nhBtn svg,
+[dir="rtl"] .rowChev svg {
+  transform: scaleX(-1);
+}
 
 /* ---------- stat cards row ---------- */
 .statRow {
@@ -171,7 +202,9 @@
 .trendBad { color: #EF4444; }
 .statVs {
   font-size: 0.72rem;
-  color: #94A3B8;
+  /* QA-uiux (WCAG 1.4.3): #94A3B8 was 2.56:1 on white for 11.5px text.
+     #66748C = 4.73:1 (dark .statVs override #7d84a5 already passes 4.53:1). */
+  color: #66748C;
 }
 
 /* ---------- middle row: table + performers ---------- */
@@ -182,6 +215,13 @@
   margin-bottom: 18px;
 }
 .tableCard { display: flex; flex-direction: column; }
+/* QA-fix (readme pill clipping): the dashboard middle row gives this card
+   ~596px of interior width, but the 6-column table wants up to 859px — the
+   .tableScroll clipped the Status column mid-word ("Oper", "In Pr").
+   Container query: in narrow cards drop the least-critical column
+   (Created At — still visible on the ticket detail page) and tighten the
+   subject so ID / Subject / Priority / Status always render in full. */
+.tableCard { container-type: inline-size; }
 
 .tableScroll { overflow-x: auto; }
 .table {
@@ -235,6 +275,9 @@
   text-overflow: ellipsis;
   font-weight: 500;
   color: #2A3654;
+  /* FIX(QA-rtl-trunc): EN subjects inside the RTL recent-tickets table must
+     ellipsize at their own END — same fix as AgentQueue/UserHome/TicketsList. */
+  unicode-bidi: plaintext;
 }
 .dateCell {
   color: #7C86A5;
@@ -242,6 +285,18 @@
   text-align: end;
 }
 .chevCell { width: 24px; }
+
+/* ── QA-fix (readme pill clipping): narrow-card table layout ──────────
+   Applies when the Recent-Tickets card interior is under 640px (desktop
+   mid-row with the Top Performers column beside it). Keeps every status
+   pill fully visible — no mid-word clipping, no horizontal scroll. */
+@container (max-width: 640px) {
+  .thDate,
+  .dateCell { display: none; }
+  .subject { max-width: 150px; }
+  .table { min-width: 0; }
+  .table td { padding: 10px 8px; }
+}
 .rowChev {
   color: #B3BBD1;
   display: inline-flex;
@@ -256,14 +311,18 @@
   font-weight: 600;
   line-height: 1.4;
 }
-.prio-low { background: #EAF9F0; color: #22A55C; }
-.prio-medium { background: #FEF3E2; color: #E58211; }
-.prio-high { background: #FDEBEC; color: #EF4444; }
-.prio-urgent { background: #F1EBFE; color: #8B4CE8; }
-.stat-open { background: #FDEBEC; color: #EF4444; }
-.stat-in-progress { background: #FEF3E2; color: #E58211; }
-.stat-resolved { background: #EAF9F0; color: #22A55C; }
-.stat-closed { background: #EEF1F7; color: #64748B; }
+/* QA-uiux (WCAG 1.4.3): pill texts were the vivid base colors on pastel
+   tints (2.1–3.3:1). The pastel backgrounds are theme-constant (they stay
+   light in dark mode by design), so the TEXT uses static 700-weight shades
+   that pass on those fixed backgrounds in BOTH themes (4.99–7.7:1). */
+.prio-low { background: #EAF9F0; color: #166534; }
+.prio-medium { background: #FEF3E2; color: #bc3e0b; }
+.prio-high { background: #FDEBEC; color: #b91c1c; }
+.prio-urgent { background: #F1EBFE; color: #6D28D9; }
+.stat-open { background: #FDEBEC; color: #b91c1c; }
+.stat-in-progress { background: #FEF3E2; color: #bc3e0b; }
+.stat-resolved { background: #EAF9F0; color: #166534; }
+.stat-closed { background: #EEF1F7; color: #4b5563; }
 
 /* ---------- top performers ---------- */
 .performerList { display: flex; flex-direction: column; }
@@ -333,7 +392,9 @@
 }
 .performerEmail {
   font-size: 0.62rem;
-  color: #94A3B8;
+  /* QA-uiux (WCAG 1.4.3): #94A3B8 was 2.6:1 at 10px — #66748C = 4.73:1
+     (dark override #7d84a5 already passes). */
+  color: #66748C;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -351,7 +412,9 @@
 }
 .scoreLabel {
   font-size: 0.64rem;
-  color: #94A3B8;
+  /* QA-uiux (WCAG 1.4.3): #94A3B8 was 2.6:1 at 10px — #66748C = 4.73:1
+     (dark .scoreLabel override #7d84a5 already passes). */
+  color: #66748C;
 }
 
 /* ---------- charts row ---------- */
@@ -484,7 +547,9 @@
 }
 .profileRole {
   font-size: 0.7rem;
-  color: #94A3B8;
+  /* QA-uiux (WCAG 1.4.3): #94A3B8 was 2.6:1 at 11px — #66748C = 4.73:1
+     (dark override #7d84a5 already passes). */
+  color: #66748C;
   margin-top: 2px;
 }
 .menuDivider {
@@ -520,7 +585,9 @@
   height: 18px;
   padding: 0 5px;
   border-radius: 999px;
-  background: #EF4444;
+  /* QA-uiux (WCAG 1.4.3): white on #EF4444 was 3.76:1 at 10.5px bold —
+     deepened red = 5.27:1 (matches the navbar notification badge). */
+  background: #d31f1f;
   color: #fff;
   font-size: 0.66rem;
   font-weight: 700;
@@ -760,6 +827,10 @@
 }
 
 @media (max-width: 767px) {
+  /* QA-visual (WCAG 2.5.8): "view all" was a measured 23px-tall tap band.
+     Grow the padding on phones — visual weight barely changes, the tap
+     band becomes ~35px. */
+  .viewAll { padding: 8px 6px; }
   .wrap { padding: 14px 14px 8px; }
   .chartRow { grid-template-columns: 1fr; }
   .trendsCard { grid-column: auto; }
@@ -768,11 +839,33 @@
   .donutWrap { flex-direction: column; }
   .donutBox { flex: none; width: 170px; }
   .donutLegend { flex-direction: row; flex-wrap: wrap; gap: 8px 14px; }
+  /* QA-deep (table-cards): the whole recent-tickets row is tappable in card
+     mode — the trailing chevron cell would render as a lone arrow row, and
+     the subject needs the full card width (its 170px desktop clamp fought
+     the stacked caption layout). */
+  .chevCell { display: none !important; }
+  /* QA-fix (mobile hard-clip): in the stacked card layout the subject td is
+     a FLEX row (caption + value, see .table-cards td in index.css) — but
+     text-overflow: ellipsis has no effect on flex containers, so the
+     nowrap + overflow:hidden combination hard-clipped subjects mid-character
+     at the card edge (e.g. "…on termi"). Make the subject a block: caption
+     above, full-width wrapping text below — mobile ticket cards grow
+     naturally and nothing is ever cut. */
+  .subject {
+    display: block !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-align: start !important;
+  }
+  .dateCell { white-space: nowrap; }
 }
 
 @media (max-width: 575px) {
   .statRow { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .sideCol { grid-template-columns: minmax(0, 1fr); }
   .card, .statCard { padding: 14px; }
-  .subject { max-width: 170px; }
+  /* (subject clamp removed — the ≤767px block now lets mobile subjects
+     wrap at full card width; the old 170px clamp hard-clipped in the
+     stacked flex-card layout, see QA-fix above) */
 }

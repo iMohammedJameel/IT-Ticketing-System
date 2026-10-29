@@ -22,7 +22,11 @@ function TicketDetailPage() {
   const navigate = useNavigate();
   const { user, isStaff } = useAuth();
   const { onlineStaff } = useNotifications();
-  const { t } = useI18n();
+  // isRtl — the back arrow must POINT WITH the reading direction:
+  // LTR back = left arrow, RTL back = right arrow (same pattern as
+  // KBArticlePage). Previously hardcoded fa-arrow-left, which pointed
+  // FORWARD in the Arabic UI (QA-visual finding).
+  const { t, isRtl } = useI18n();
 
   const [ticket, setTicket] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -49,8 +53,11 @@ function TicketDetailPage() {
 
   useEffect(() => {
     if (!isStaff) return;
+    // FIX(QA-004..007): /auth/users is admin-only and 403'd for agents —
+    // the staff-directory endpoint is allowed for admin + agent and returns
+    // only the minimal fields the assign dropdown needs.
     authService
-      .getAllUsers({ role: "admin,agent", limit: 100, status: "active" })
+      .getStaffDirectory()
       .then((res) => setStaffList(res.data.users || []))
       .catch(() => {});
   }, [isStaff]);
@@ -109,7 +116,7 @@ function TicketDetailPage() {
             className="btn btn-outline-secondary btn-sm"
             onClick={() => navigate(-1)}
           >
-            <i className="fa-solid fa-arrow-left me-1" aria-hidden="true"></i>
+            <i className={`fa-solid ${isRtl ? "fa-arrow-right" : "fa-arrow-left"} me-1`} aria-hidden="true"></i>
             <span className="visually-hidden">&nbsp;</span>
             {t("common.back")}
           </button>

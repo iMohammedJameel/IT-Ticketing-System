@@ -18,18 +18,20 @@ const notificationService = require("./services/notificationService");
 let io = null;
 
 // ---------------------------------------------------------------------
-// Presence — which staff members are online right now.
+// Presence — which users are online right now (QA-deep: extended from
+// staff-only to EVERY connected user so the users table can show employee
+// activity too; the list is still broadcast ONLY to the staff room, so
+// employees never see each other's presence).
 // A userId→socket-count map (not a Set of sockets) so multiple tabs count
 // once, and a user only goes offline when their LAST socket disconnects.
-// Broadcast goes to the staff room; the UI shows a green dot on agents.
 // ---------------------------------------------------------------------
 const presence = new Map();
 
-const onlineStaffIds = () => [...presence.keys()];
+const onlineUserIds = () => [...presence.keys()];
 
 const broadcastPresence = () => {
   if (!io) return;
-  const payload = { online: onlineStaffIds() };
+  const payload = { online: onlineUserIds() };
   io.to("role:staff").emit("presence:update", payload);
 };
 
@@ -83,15 +85,16 @@ const initSocket = (server) => {
     // Role rooms — notificationService broadcasts new tickets to all staff
     if (socket.userRole === "admin") socket.join("role:admin");
     if (socket.userRole === "agent") socket.join("role:agent");
-    if (socket.userRole === "admin" || socket.userRole === "agent") {
-      socket.join("role:staff");
 
-      // Presence — count this user's sockets; broadcast the online list and
-      // also hand the CURRENT list to the just-connected socket so the UI
-      // doesn't have to wait for the next change to know who's online.
-      presence.set(socket.userId, (presence.get(socket.userId) || 0) + 1);
-      socket.emit("presence:update", { online: onlineStaffIds() });
-      broadcastPresence();
+    // Presence — count this socket; broadcast the online list to staff and
+    // hand the CURRENT list to just-connected STAFF sockets so the UI
+    // doesn't have to wait for the next change to know who's online.
+    // (QA-deep: end users are tracked too — admins see green dots on every
+    // active employee row in the users table.)
+    presence.set(socket.userId, (presence.get(socket.userId) || 0) + 1);
+    broadcastPresence();
+    if (socket.userRole === "admin" || socket.userRole === "agent") {
+      socket.emit("presence:update", { online: onlineUserIds() });
     }
 
     socket.on("join:ticket", (ticketId) => {
@@ -139,8 +142,8 @@ const initSocket = (server) => {
 
 const getIo = () => io;
 
-// Current online staff (used by tests / future REST exposure)
-const getOnlineStaff = () => onlineStaffIds();
+// Currently-online user ids (used by tests / future REST exposure)
+const getOnlineStaff = () => onlineUserIds();
 
 // Emit to a ticket room (everyone watching that ticket)
 const emitToTicket = (ticketId, event, payload) => {

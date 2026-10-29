@@ -5,6 +5,7 @@
 // Knowledge base controller — CRUD + search + helpful voting
 const KBArticle = require("../models/KBArticle");
 const { AppError } = require("../middleware/errorMiddleware");
+const { validateOrThrow } = require("../utils/validation");
 const Joi = require("joi");
 
 // Unicode-aware slugify — keeps letters/digits from ANY script (Arabic titles
@@ -133,8 +134,7 @@ const listAll = async (req, res, next) => {
 // Admin — create article
 const create = async (req, res, next) => {
   try {
-    const { error, value } = createSchema.validate(req.body, { abortEarly: false, stripUnknown: true });
-    if (error) throw new AppError("Validation error", 400, error.details.map((d) => d.message));
+    const value = validateOrThrow(createSchema, req.body);
 
     const slug = slugify(value.title);
     if (!slug) throw new AppError("Title must contain letters or digits to build a slug", 400);
@@ -151,8 +151,7 @@ const create = async (req, res, next) => {
 // Admin — update article
 const update = async (req, res, next) => {
   try {
-    const { error, value } = updateSchema.validate(req.body, { abortEarly: false, stripUnknown: true });
-    if (error) throw new AppError("Validation error", 400, error.details.map((d) => d.message));
+    const value = validateOrThrow(updateSchema, req.body);
 
     if (value.title) {
       const slug = slugify(value.title);

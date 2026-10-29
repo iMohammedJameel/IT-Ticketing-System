@@ -136,7 +136,9 @@
 
 .inputIcon {
   position: absolute;
-  left: 13px;
+  /* QA-deep (RTL): physical `left` put the lock on the WRONG side in the
+     Arabic form (text starts right) — logical inline-start mirrors it. */
+  inset-inline-start: 13px;
   color: #9ca3af;
   font-size: 14px;
   pointer-events: none;
@@ -146,7 +148,11 @@
 
 .registerField input {
   width: 100%;
-  padding: 9px 14px 9px 38px;
+  /* QA-deep (RTL): 38px was reserved on the physical LEFT for the lock —
+     in Arabic that reserved lane must sit on the RIGHT (text start).
+     Logical padding mirrors automatically per direction. */
+  padding: 9px 14px;
+  padding-inline-start: 38px;
   border: 1.5px solid #e5e7eb;
   border-radius: 9px;
   font-size: 0.85rem;
@@ -171,13 +177,19 @@
 /* Password toggle */
 .eyeBtn {
   position: absolute;
-  right: 12px;
+  /* QA-deep (RTL): physical `right` collided with the START of typed text
+     in Arabic; logical inline-end keeps it at the text's finish line. */
+  inset-inline-end: 12px;
   background: none;
   border: none;
   cursor: pointer;
   color: #9ca3af;
   display: flex;
   align-items: center;
+  justify-content: center;
+  /* QA-deep (WCAG 2.5.8): ~22px hit area → comfortable 35px */
+  min-width: 2.2rem;
+  min-height: 2.2rem;
   padding: 4px;
   transition: color 0.2s;
   font-size: 14px;

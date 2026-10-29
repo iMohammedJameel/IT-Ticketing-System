@@ -127,7 +127,9 @@
   border-radius: 50px;
   line-height: 16px;
   text-align: center;
-  background: var(--danger);
+  /* QA-uiux (WCAG 1.4.3): white on var(--danger) #eb5757 was 3.48:1 at
+     11px bold — the deepened red keeps the alert feel at 5.27:1. */
+  background: #d31f1f;
   color: white;
   pointer-events: none;
   box-shadow: 0 2px 4px rgba(235, 87, 87, 0.4);
@@ -503,6 +505,11 @@
 }
 
 @media (max-width: 480px) {
-  .searchBox { display: none; }
+  /* QA-nt1: the JSX pairs .searchBox with Bootstrap's .d-flex, whose
+     `display: flex !important` beat this plain `display: none` — the search
+     pill still rendered at 390px (180px + 24px margins) and pushed the
+     lang/theme/bell/user-chip controls 74px off-screen (user chip fully
+     invisible). !important restores the intended hide and wins the cascade. */
+  .searchBox { display: none !important; margin: 0 !important; }
   .nav { padding: 0.6rem 0.75rem; }
 }

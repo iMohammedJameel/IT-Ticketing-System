@@ -173,7 +173,7 @@ function Sidebar({ isOpen, onClose }) {
   return (
     <aside
       className={`${styles.sidebar} app-sidebar ${isOpen ? styles.open : ""}`}
-      aria-label="Main navigation"
+      aria-label={t("nav.mainNav")}
     >
       {/* brand — extracted reference mark + live i18n name/sub-line */}
       <div className={styles.logo}>
@@ -191,7 +191,7 @@ function Sidebar({ isOpen, onClose }) {
             <NavLink
               to={item.path}
               className={({ isActive }) =>
-                `${styles.navItem} ${isActive ? styles.active : ""}`
+                `${styles.navItem} ${item.badge ? styles.hasBadge : ""} ${isActive ? styles.active : ""}`
               }
               key={item.path}
               onClick={onClose}

@@ -7,7 +7,9 @@ import api from "../api";
 
 export const ticketService = {
   create: (data) => api.post("/tickets", data),
-  list: (params) => api.get("/tickets", { params }),
+  // cfg (optional): axios config — used by TicketsList to pass an
+  // AbortController signal so stale requests get cancelled (QA-fix-race).
+  list: (params, cfg = {}) => api.get("/tickets", { params, ...cfg }),
   getById: (id) => api.get(`/tickets/${id}`),
   update: (id, data) => api.put(`/tickets/${id}`, data),
   updateStatus: (id, data) => api.patch(`/tickets/${id}/status`, data),

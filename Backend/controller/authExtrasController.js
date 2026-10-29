@@ -9,6 +9,7 @@ const {
   resetPasswordSchema,
 } = require("./validation/authvalidation");
 const { AppError } = require("../middleware/errorMiddleware");
+const { validateOrThrow } = require("../utils/validation");
 const env = require("../config/env");
 const bcrypt = require("bcrypt");
 const { generateToken, verifyToken } = require("../services/tokenService");
@@ -22,11 +23,7 @@ const DAY = 24 * HOUR;
 // ---------------------------------------------------------------------
 const forgotPassword = async (req, res, next) => {
   try {
-    const { error, value } = forgotPasswordSchema.validate(req.body, {
-      abortEarly: false,
-      stripUnknown: true,
-    });
-    if (error) throw new AppError("Validation error", 400, error.details.map((d) => d.message));
+    const value = validateOrThrow(forgotPasswordSchema, req.body);
 
     const user = await User.findOne({ email: value.email });
     if (user && user.status === "active") {
@@ -51,11 +48,7 @@ const forgotPassword = async (req, res, next) => {
 // ---------------------------------------------------------------------
 const resetPassword = async (req, res, next) => {
   try {
-    const { error, value } = resetPasswordSchema.validate(req.body, {
-      abortEarly: false,
-      stripUnknown: true,
-    });
-    if (error) throw new AppError("Validation error", 400, error.details.map((d) => d.message));
+    const value = validateOrThrow(resetPasswordSchema, req.body);
 
     const hashedToken = verifyToken(value.token);
     const user = await User.findOne({

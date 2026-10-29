@@ -91,11 +91,10 @@ export default function KnowledgeBase() {
         <div className="d-flex gap-2 mb-4 flex-wrap">
           <input
             type="search"
-            className="form-control"
+            className={`form-control ${styles.searchInput}`}
             placeholder={t("kb.searchPlaceholder")}
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            style={{ maxWidth: "280px" }}
             aria-label={t("kb.searchPlaceholder")}
           />
           <select
@@ -165,13 +164,17 @@ export default function KnowledgeBase() {
                         drafts stay inert for non-link navigation (admin edits instead) */}
                     {a.published ? (
                       <Link to={`/kb/${a._id}`} className={`stretched-link ${styles.cardLink}`}>
-                        <h5 className={styles.articleTitle}>{a.title}</h5>
+                        {/* QA-deep (bidi): dir="auto" lets each article render in its
+                            own script direction — EN titles/excerpts get their
+                            trailing ellipsis on the END (not mirrored to the
+                            start), AR content stays RTL. */}
+                        <h5 className={styles.articleTitle} dir="auto">{a.title}</h5>
                       </Link>
                     ) : (
-                      <h5 className={styles.articleTitle}>{a.title}</h5>
+                      <h5 className={styles.articleTitle} dir="auto">{a.title}</h5>
                     )}
-                    <p className={styles.articleExcerpt}>
-                      {a.excerpt || a.content?.slice(0, 120)}...
+                    <p className={styles.articleExcerpt} dir="auto" lang={/^\s*[A-Za-z]/.test(a.excerpt || a.content || "") ? "en" : undefined}>
+                      {a.excerpt || a.content?.slice(0, 120)}…
                     </p>
                     <div className={styles.articleMeta}>
                       <span>

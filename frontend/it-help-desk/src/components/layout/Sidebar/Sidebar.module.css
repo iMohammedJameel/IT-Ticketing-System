@@ -104,6 +104,10 @@
   height: 48px;
   margin: 0 20px 4px;
   padding-inline-start: 16px;
+  /* Default end padding — enough breathing room for the longest labels
+     ("Knowledge Base" EN / "قاعدة المعرفة" AR) to render WITHOUT ellipsis.
+     The wider badge lane is opt-in per item via .hasBadge below. */
+  padding-inline-end: 16px;
   border-radius: 8px;
   text-decoration: none;
   color: #F5F7FA;
@@ -121,6 +125,13 @@
 .navItem:focus-visible {
   outline: 2px solid #7BA4E8;
   outline-offset: -2px;
+}
+
+/* QA-fix (sidebar ellipsis): ONLY items that actually render a badge keep
+   the 44px collision lane (3-digit counts vs long labels). Badge-less items
+   get the full 129px label budget so "Knowledge Base" shows in full. */
+.navItem.hasBadge {
+  padding-inline-end: 44px;
 }
 
 /* ACTIVE — the reference's royal-blue pill with a subtle vertical

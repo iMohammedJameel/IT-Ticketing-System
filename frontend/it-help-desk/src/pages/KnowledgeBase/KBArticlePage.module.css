@@ -110,7 +110,11 @@
   font-size: 0.78rem;
   min-width: 1.6em;
   text-align: center;
+  /* QA-uiux (WCAG 1.4.3): inherited btn-outline-success green was 4.0:1 on
+     the input bg (12.5px). Explicit compliant inks per theme. */
+  color: #146c43;
 }
+[data-theme="dark"] .voteCount { color: #9ae6c4; }
 
 .votedBtn {
   opacity: 1;

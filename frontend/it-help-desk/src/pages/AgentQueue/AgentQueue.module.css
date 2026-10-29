@@ -101,6 +101,9 @@
   color: var(--primary);
   white-space: nowrap;
 }
+/* QA-uiux (WCAG 1.4.3): dark --primary (#4f52bf) on the dark card was
+   ~3:1 at 12.8px — lightened link tone reads 6.3:1 in dark mode. */
+[data-theme="dark"] .rowNumber { color: #9fa5f5; }
 
 .rowSubject {
   flex: 1;
@@ -110,6 +113,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  /* FIX(QA-rtl-trunc): English subjects inside the RTL queue row were clipped
+     from their START ("...nvoice QR code…") because the row's RTL direction
+     made the browser truncate the logical start. `unicode-bidi: plaintext`
+     lets each subject use its own content direction, so an EN subject
+     ellipsizes at its END ("Tax invoice QR…") and an AR subject stays RTL. */
+  unicode-bidi: plaintext;
 }
 
 .rowPriority { font-size: 0.75rem; white-space: nowrap; }
@@ -121,7 +130,8 @@
 }
 .rowSlaLate {
   font-size: 0.72rem;
-  color: var(--status-open);
+  /* QA-uiux (WCAG 1.4.3): vivid #ef4444 was 3.76:1 at 11.5px — ink passes. */
+  color: var(--status-open-ink);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -142,3 +152,40 @@
   .row { flex-wrap: wrap; }
   .rowChevron { display: none; }
 }
+
+/* ===== QA-deep: queue list footer =====
+   Short queues used to end abruptly leaving the card "floating" in white
+   space. The footer anchors the card bottom: count summary + escape hatch
+   to the full filterable tickets list. */
+.listFooter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: 0.75rem 1.25rem;
+  border-top: 1px solid var(--border);
+  background: var(--bg-input);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
+.listFooterText {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.listFooterBtn {
+  display: inline-flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 6px 8px;
+  min-height: 2rem; /* WCAG 2.5.8 tap size */
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--primary);
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s ease;
+}
+.listFooterBtn:hover { color: var(--hover-color, #3d3e9c); text-decoration: underline; }

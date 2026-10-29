@@ -15,13 +15,13 @@ const VIEWS = [
   { value: "at-risk", icon: "fa-triangle-exclamation" },
 ];
 
-function TicketsFilters({ filters, setFilters, onRefresh, companies, isStaff }) {
+function TicketsFilters({ filters, setFilters, onRefresh, companies, isStaff, searching }) {
   const { t } = useI18n();
 
   const set = (key) => (e) =>
     setFilters({ ...filters, [key]: e.target.value, page: 1 });
 
-  const activeFilterCount = ["status", "priority", "category", "company", "tag", "search"].filter(
+  const activeFilterCount = ["status", "priority", "category", "company", "tag", "search", "from", "to"].filter(
     (k) => filters[k]
   ).length + (isStaff && filters.view !== "all" ? 1 : 0);
 
@@ -46,15 +46,30 @@ function TicketsFilters({ filters, setFilters, onRefresh, companies, isStaff }) 
       )}
 
       <div className="d-flex gap-2 flex-wrap">
-        <input
-          type="search"
-          className="form-control"
-          style={{ maxWidth: "240px" }}
-          placeholder={t("tickets.searchPlaceholder")}
-          value={filters.search}
-          onChange={set("search")}
-          aria-label={t("tickets.searchPlaceholder")}
-        />
+        <div className="position-relative">
+          <input
+            type="search"
+            className="form-control"
+            style={{ maxWidth: "240px", paddingInlineEnd: searching ? "2.25rem" : undefined }}
+            placeholder={t("tickets.searchPlaceholder")}
+            value={filters.search}
+            onChange={set("search")}
+            aria-label={t("tickets.searchPlaceholder")}
+          />
+          {/* ADD(QA-rec-6): typing-but-debouncing indicator — a tiny inline
+              spinner so the user sees the search is being processed during
+              the 350ms debounce pause instead of a frozen-looking input. */}
+          {searching && (
+            <span
+              className="position-absolute top-50 translate-middle-y"
+              style={{ insetInlineEnd: "8px", pointerEvents: "none" }}
+              role="status"
+              aria-label={t("tickets.searching")}
+            >
+              <span className="spinner-border spinner-border-sm text-primary"></span>
+            </span>
+          )}
+        </div>
         <select className="form-select w-auto" value={filters.status} onChange={set("status")} aria-label={t("common.filterStatus")}>
           <option value="">{t("common.allStatuses")}</option>
           {STATUS_OPTIONS.map((s) => (
@@ -64,7 +79,7 @@ function TicketsFilters({ filters, setFilters, onRefresh, companies, isStaff }) 
         <select className="form-select w-auto" value={filters.priority} onChange={set("priority")} aria-label={t("common.filterPriority")}>
           <option value="">{t("common.allPriorities")}</option>
           {PRIORITY_OPTIONS.map((p) => (
-            <option key={p.value} value={p.value}>{t(`status.${p.value}`)}</option>
+            <option key={p.value} value={p.value}>{t(`priority.${p.value}`)}</option>
           ))}
         </select>
         <select className="form-select w-auto" value={filters.category} onChange={set("category")} aria-label={t("common.filterCategory")}>
@@ -89,13 +104,36 @@ function TicketsFilters({ filters, setFilters, onRefresh, companies, isStaff }) 
           onChange={set("tag")}
           aria-label={t("tickets.tags")}
         />
+        {/* ADD(QA-rec-4): date-range filter — createdAt between from..to.
+            Staff investigating a queue almost always narrow by time window. */}
+        <input
+          type="date"
+          className="form-control w-auto"
+          value={filters.from || ""}
+          max={filters.to || undefined}
+          onChange={set("from")}
+          aria-label={t("tickets.dateFrom")}
+          title={t("tickets.dateFrom")}
+        />
+        <span className="align-self-center text-muted">–</span>
+        <input
+          type="date"
+          className="form-control w-auto"
+          value={filters.to || ""}
+          min={filters.from || undefined}
+          onChange={set("to")}
+          aria-label={t("tickets.dateTo")}
+          title={t("tickets.dateTo")}
+        />
         <button
           className="btn btn-outline-secondary btn-sm"
           onClick={() =>
             setFilters({
               ...filters,
               view: "all",
-              status: "", priority: "", category: "", company: "", search: "", tag: "", page: 1,
+              status: "", priority: "", category: "", company: "", search: "", tag: "",
+              from: "", to: "",
+              page: 1,
             })
           }
         >

@@ -5,6 +5,7 @@
 // English dictionary (also the fallback for missing Arabic keys)
 export const EN = {
   nav: {
+    mainNav: "Main navigation",
     dashboard: "Dashboard",
     users: "Users",
     queue: "My Queue",
@@ -51,6 +52,7 @@ export const EN = {
     create: "Create",
     exportCsv: "Export CSV",
     selected: "selected",
+    arrowSep: "→",
     changeStatus: "Change status...",
     assignTo: "Assign to...",
     filterStatus: "Filter by status",
@@ -64,6 +66,8 @@ export const EN = {
     notAssigned: "Not Assigned",
     onTrack: "On track",
     overdue: "Overdue",
+    retry: "Retry",
+    skipToContent: "Skip to content",
     page: "Page {a} of {b}",
     showingRange: "Showing {a}–{b} of {c}",
     rowsPerPage: "Rows per page",
@@ -167,6 +171,22 @@ export const EN = {
     assignedToast: "Ticket assigned",
     deletedToast: "tickets deleted",
     confirmBulkDelete: "Delete {a} tickets? This cannot be undone.",
+    // FIX(QA-rec-1): dedicated strings for the bulk-delete MODAL (replaces
+    // the browser window.confirm — needs its own title/body/confirm label)
+    deleteConfirmTitle: "Delete {a} tickets?",
+    // FIX(QA-grammar): singular/dual forms for correct English grammar
+    deleteConfirmTitleOne: "Delete 1 ticket?",
+    deleteConfirmTitleTwo: "Delete 2 tickets?",
+    deleteConfirmBody:
+      "The selected tickets will be permanently deleted, together with their comments and attachments. This action cannot be undone.",
+    deleteForever: "Delete permanently",
+    // FIX(QA-rec-2): visible error state for the list (was: silent empty table)
+    loadError: "Couldn't load tickets",
+    loadErrorHint: "Check your connection, then try again.",
+    // ADD(QA-rec-6): debounce indicator + date-range filter labels
+    searching: "Searching…",
+    dateFrom: "From date",
+    dateTo: "To date",
     commentAdded: "Comment added",
     pickStarFirst: "Please pick a star rating",
     stars: "stars",
@@ -256,6 +276,8 @@ export const EN = {
     empty_unassigned: "Queue is clear — every ticket has an owner",
     empty_at_risk: "No tickets at SLA risk",
     emptyHint: "New tickets will appear here as they come in.",
+    showing: "Showing the latest {a} tickets in this view",
+    openFullList: "Open the full tickets list",
   },
   home: {
     hello: "Hi {a} 👋",
@@ -681,6 +703,11 @@ export const EN = {
     "in-progress": "In Progress",
     resolved: "Resolved",
     closed: "Closed",
+  },
+  // FIX(QA-rec-4): priorities used to live under status.* (shared namespace)
+  // — easy to confuse "status.urgent" with a real status value. Split into
+  // their own namespace; status.* now contains ONLY lifecycle states.
+  priority: {
     low: "Low",
     medium: "Medium",
     high: "High",

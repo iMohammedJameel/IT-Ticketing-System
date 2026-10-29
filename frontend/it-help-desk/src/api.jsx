@@ -76,6 +76,21 @@ api.interceptors.response.use(
   (response) => response.data,
   async (error) => {
     const originalRequest = error.config;
+
+    // FIX(QA-fix-race): requests cancelled via AbortController (page/filter
+    // changed mid-flight) are NOT errors — the caller already moved on.
+    // Before this guard, a cancelled request fell into the no-response
+    // branch, got normalized as "errors.network", and pages toasted a
+    // phantom "network error" (e.g. React StrictMode's double-mount in dev
+    // cancelled the first ticket fetch on every page load).
+    if (
+      error.code === "ERR_CANCELED" ||
+      error.name === "CanceledError" ||
+      error.name === "AbortError"
+    ) {
+      return Promise.reject({ canceled: true, message: "", status: 0, details: null });
+    }
+
     let normalized = {
       success: false,
       status: 0,

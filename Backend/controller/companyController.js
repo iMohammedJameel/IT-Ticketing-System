@@ -7,6 +7,8 @@
 const Company = require("../models/Company");
 const Ticket = require("../models/Ticket");
 const { AppError } = require("../middleware/errorMiddleware");
+const { validateOrThrow } = require("../utils/validation");
+const { escapeRegex } = require("../utils/regex");
 const Joi = require("joi");
 
 const upsertSchema = Joi.object({
@@ -30,7 +32,7 @@ const list = async (req, res, next) => {
     if (req.query.active === "true") filter.active = true;
     if (req.query.active === "false") filter.active = false;
     if (req.query.search) {
-      const escaped = String(req.query.search).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const escaped = escapeRegex(req.query.search);
       filter.name = { $regex: escaped, $options: "i" };
     }
     const companies = await Company.find(filter).sort({ name: 1 }).limit(500);
@@ -60,10 +62,9 @@ const getOne = async (req, res, next) => {
 // POST /companies — admin
 const create = async (req, res, next) => {
   try {
-    const { error, value } = upsertSchema.validate(req.body, { abortEarly: false, stripUnknown: true });
-    if (error) throw new AppError("Validation error", 400, error.details.map((d) => d.message));
+    const value = validateOrThrow(upsertSchema, req.body);
 
-    const existing = await Company.findOne({ name: { $regex: `^${value.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, $options: "i" } });
+    const existing = await Company.findOne({ name: { $regex: `^${escapeRegex(value.name)}$`, $options: "i" } });
     if (existing) throw new AppError("A company with this name already exists", 409);
 
     const company = await Company.create({ ...value, createdBy: undefined });
@@ -77,12 +78,11 @@ const create = async (req, res, next) => {
 const update = async (req, res, next) => {
   try {
     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) throw new AppError("Invalid company id", 400);
-    const { error, value } = updateSchema.validate(req.body, { abortEarly: false, stripUnknown: true });
-    if (error) throw new AppError("Validation error", 400, error.details.map((d) => d.message));
+    const value = validateOrThrow(updateSchema, req.body);
 
     if (value.name) {
       const dup = await Company.findOne({
-        name: { $regex: `^${value.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, $options: "i" },
+        name: { $regex: `^${escapeRegex(value.name)}$`, $options: "i" },
         _id: { $ne: req.params.id },
       });
       if (dup) throw new AppError("A company with this name already exists", 409);

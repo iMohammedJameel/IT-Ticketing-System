@@ -23,7 +23,7 @@ function BulkActionBar({ selectedCount, admins, onBulkStatus, onBulkAssign, onBu
           e.target.value = "";
         }}
         defaultValue=""
-        aria-label="Bulk status"
+        aria-label={t("common.changeStatus")}
       >
         <option value="">{t("common.changeStatus")}</option>
         {STATUS_OPTIONS.map((s) => (
@@ -37,7 +37,7 @@ function BulkActionBar({ selectedCount, admins, onBulkStatus, onBulkAssign, onBu
           e.target.value = "";
         }}
         defaultValue=""
-        aria-label="Bulk assign"
+        aria-label={t("common.assignTo")}
       >
         <option value="">{t("common.assignTo")}</option>
         {admins.map((a) => (

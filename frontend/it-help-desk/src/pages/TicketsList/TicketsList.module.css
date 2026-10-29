@@ -127,17 +127,35 @@
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 600;
-  color: white;
+  /* QA-uiux: `color: white` removed — inline styles now set a theme-aware
+     ink on a 15% tinted chip (WCAG 1.4.3, was 1.7–3.8:1 on solid vivid bg). */
   text-transform: capitalize;
 }
 
+/* QA-uiux (WCAG 1.4.3): total-count chip beside the page title — theme-aware
+   surface + secondary ink (6.5:1 light / 7:1 dark; bootstrap bg-secondary
+   was 3.5:1). */
+.countBadge {
+  display: inline-flex;
+  align-items: center;
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  font-weight: 700;
+  font-size: 0.8rem;
+  line-height: 1;
+  padding: 5px 10px;
+  border-radius: 999px;
+}
+
+/* QA-uiux (WCAG 1.4.3): vivid success/danger bases were 2.9/3.4:1 at 12px
+   — theme-aware inks pass in both themes. */
 .slaOk {
-  color: var(--success);
+  color: var(--success-ink);
   font-size: 0.75rem;
 }
 
 .slaOverdue {
-  color: var(--danger);
+  color: var(--danger-ink);
   font-size: 0.75rem;
   font-weight: 600;
 }
@@ -413,6 +431,11 @@
   margin: 0 0 0.75rem;
 }
 
+/* QA-uiux (WCAG 1.4.3): dark --primary (#4f52bf) on the dark card read
+   2.6:1 — the lightened brand tone passes 6.3:1. */
+[data-theme="dark"] .detailSectionTitle { color: #9fa5f5; }
+[data-theme="dark"] .detailNumber { color: #9fa5f5; }
+
 .slaChip {
   display: inline-flex;
   align-items: center;
@@ -461,11 +484,45 @@
   color: var(--text-dark);
 }
 
+/* TicketFacts value text — one-line ellipsis, direction-safe for mixed
+   AR/EN values (dir="auto" on the span picks per-value direction). */
 .factText {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* ===== QA-deep: tags cell — single fixed-height line =====
+   Badges previously wrapped to 2–3 lines on narrow columns making rows
+   unevenly tall. Now: one line, overflow clipped (the +N chip + title
+   tooltip carry the rest), consistent row height everywhere. */
+.tagsCell {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.25rem;
+  max-width: 11rem;
+  overflow: hidden;
+  line-height: 1.6;
+}
+
+.tagChip {
+  flex: none;
+  display: inline-block;
+  padding: 0.05rem 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.tagChipMore {
+  color: var(--text-muted);
+  border-style: dashed;
 }
 
 /* Tags row keeps WRAPPING badges (never one-line ellipsis) */
@@ -510,6 +567,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  /* FIX(QA-rtl-trunc): EN subjects inside RTL cards ellipsize at their own
+     END instead of being clipped from their start. */
+  unicode-bidi: plaintext;
 }
 
 /* Attachment image thumbnails */

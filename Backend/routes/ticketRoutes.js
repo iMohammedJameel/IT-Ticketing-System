@@ -14,8 +14,8 @@ const {
   updateTicketPriority,
   assignTicket,
   rateCsat,
-  getDashboardStats,
 } = require("../controller/ticketController");
+const { getDashboardStats } = require("../controller/dashboardController");
 const { authMiddleware, allowedTo } = require("../middleware/authMiddleware");
 
 // Staff-only (admin + agent)

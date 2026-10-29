@@ -16,6 +16,7 @@ import { Spinner } from "../../components/common/Spinner";
 import { CommandPalette } from "../../components/common/CommandPalette";
 import VerifyBanner from "../../components/common/VerifyBanner";
 import useGlobalShortcuts from "../../hooks/useGlobalShortcuts";
+import { getRoleLanding } from "../../utils/roleLanding";
 import BgWatermark from "../../assets/bg-header-watermark.png";
 import BgSkyline from "../../assets/bg-skyline.png";
 import styles from "./Dashboard.module.css";
@@ -34,8 +35,11 @@ const KnowledgeBase = lazy(() => import("../KnowledgeBase/KnowledgeBase"));
 const KBArticlePage = lazy(() => import("../KnowledgeBase/KBArticlePage"));
 const NotificationsPage = lazy(() => import("../Notifications/Notifications"));
 
+// Stable target for the skip-to-content link (a11y landmark)
+const MAIN_CONTENT_ID = "main-content";
+
 function Dashboard() {
-  const { isAdmin, isStaff } = useAuth();
+  const { isAdmin, isStaff, user } = useAuth();
   const { t } = useI18n();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -51,6 +55,12 @@ function Dashboard() {
 
   return (
     <div className={styles.appLayout}>
+      {/* ADD(QA-rec-5): skip-to-content — first tab stop on every page.
+          Keyboard users land here before the sidebar/navbar and can jump
+          straight into the main region; visually hidden until focused. */}
+      <a href={`#${MAIN_CONTENT_ID}`} className="skip-link">
+        {t("common.skipToContent")}
+      </a>
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className={styles.rightSide}>
@@ -88,7 +98,7 @@ function Dashboard() {
           />
         )}
 
-        <main className={`${styles.main} app-main`}>
+        <main id={MAIN_CONTENT_ID} className={`${styles.main} app-main`}>
           <Suspense
             fallback={
               <div
@@ -122,25 +132,9 @@ function Dashboard() {
               <Route path="/kb/:id" element={<KBArticlePage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/settings" element={<Settings />} />
-              {/* Role-aware landing */}
-              <Route
-                path="/"
-                element={
-                  <Navigate
-                    to={isAdmin ? "/dashboard" : isStaff ? "/queue" : "/home"}
-                    replace
-                  />
-                }
-              />
-              <Route
-                path="*"
-                element={
-                  <Navigate
-                    to={isAdmin ? "/dashboard" : isStaff ? "/queue" : "/home"}
-                    replace
-                  />
-                }
-              />
+              {/* Role-aware landing — single shared helper */}
+              <Route path="/" element={<Navigate to={getRoleLanding(user)} replace />} />
+              <Route path="*" element={<Navigate to={getRoleLanding(user)} replace />} />
             </Routes>
           </Suspense>
         </main>

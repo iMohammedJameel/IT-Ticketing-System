@@ -5,6 +5,7 @@
 // Arabic dictionary — RTL becomes active when these keys are in use
 export const AR = {
   nav: {
+    mainNav: "القائمة الجانبية",
     dashboard: "لوحة التحكم",
     users: "المستخدمون",
     queue: "طابوري",
@@ -51,6 +52,7 @@ export const AR = {
     create: "إنشاء",
     exportCsv: "تصدير CSV",
     selected: "محدد",
+    arrowSep: "←",
     changeStatus: "تغيير الحالة...",
     assignTo: "إسناد إلى...",
     filterStatus: "تصفية حسب الحالة",
@@ -64,6 +66,8 @@ export const AR = {
     notAssigned: "غير مُسندة",
     onTrack: "في الموعد",
     overdue: "متأخرة",
+    retry: "إعادة المحاولة",
+    skipToContent: "تخطَّ إلى المحتوى",
     page: "صفحة {a} من {b}",
     showingRange: "عرض {a}–{b} من {c}",
     rowsPerPage: "عدد الصفوف",
@@ -167,6 +171,21 @@ export const AR = {
     assignedToast: "تم إسناد التذكرة",
     deletedToast: "تم حذف التذاكر",
     confirmBulkDelete: "حذف {a} تذكرة؟ لا يمكن التراجع عن هذا الإجراء.",
+    // FIX(QA-rec-1): نصوص نافذة تأكيد الحذف الجماعي (بديل window.confirm)
+    deleteConfirmTitle: "حذف {a} تذاكر؟",
+    // FIX(QA-grammar): صيغ المفنى/المثنى لقواعد الجمع العربية الصحيحة
+    deleteConfirmTitleOne: "حذف تذكرة واحدة؟",
+    deleteConfirmTitleTwo: "حذف تذكرتين؟",
+    deleteConfirmBody:
+      "سيتم حذف التذاكر المحددة نهائيًا مع تعليقاتها ومرفقاتها. لا يمكن التراجع عن هذا الإجراء.",
+    deleteForever: "حذف نهائي",
+    // FIX(QA-rec-2): حالة خطأ مرئية للقائمة (بدل جدول فارغ صامت)
+    loadError: "تعذّر تحميل التذاكر",
+    loadErrorHint: "تحقق من الاتصال ثم حاول مرة أخرى.",
+    // ADD(QA-rec-6): مؤشر البحث المنمّط + تسميات النطاق الزمني
+    searching: "جارٍ البحث…",
+    dateFrom: "من تاريخ",
+    dateTo: "إلى تاريخ",
     commentAdded: "تمت إضافة التعليق",
     pickStarFirst: "يرجى اختيار تقييم بالنجوم",
     stars: "نجوم",
@@ -256,6 +275,8 @@ export const AR = {
     empty_unassigned: "الطابور فاضي — كل تذكرة ليها صاحب",
     empty_at_risk: "لا توجد تذاكر مهددة بتجاوز الاتفاقية",
     emptyHint: "ستظهر التذاكر الجديدة هنا فور ورودها.",
+    showing: "عرض آخر {a} تذكرة في هذا العرض",
+    openFullList: "افتح القائمة الكاملة",
   },
   home: {
     hello: "أهلًا {a} 👋",
@@ -681,6 +702,9 @@ export const AR = {
     "in-progress": "قيد العمل",
     resolved: "تم حلها",
     closed: "مغلقة",
+  },
+  // FIX(QA-rec-4): فصل مفاتيح الأولوية عن الحالة — كانت تحت status.* سابقًا
+  priority: {
     low: "منخفضة",
     medium: "متوسطة",
     high: "عالية",

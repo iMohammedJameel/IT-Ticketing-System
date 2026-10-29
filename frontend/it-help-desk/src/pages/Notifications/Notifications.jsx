@@ -66,8 +66,12 @@ export default function Notifications() {
                       <i className={`fa-solid ${meta.icon}`}></i>
                     </div>
                     <div style={{ minWidth: 0 }}>
-                      <div className={styles.notifTitle}>{n.title}</div>
-                      <div className={styles.notifMessage}>{n.message}</div>
+                      {/* QA-deep (bidi): notifications are stored per-event in
+                          whatever language the actor used — dir="auto" renders
+                          each entry in its own script direction (EN titles no
+                          longer mirror their punctuation inside RTL rows). */}
+                      <div className={styles.notifTitle} dir="auto">{n.title}</div>
+                      <div className={styles.notifMessage} dir="auto">{n.message}</div>
                       <div className={styles.notifTime}>{formatRelativeTime(n.createdAt, lang)}</div>
                     </div>
                     {!n.read && <span className={styles.unreadDot} aria-label="unread" />}

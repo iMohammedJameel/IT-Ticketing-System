@@ -44,6 +44,21 @@
   z-index: 1;
 }
 
+/* FIX(QA-e2e-nav): the generic `.rightSide > *` rule above sets z-index:1
+   on every shell child and — equal specificity + LATER source order than
+   Navbar.module.css — silently OVERRIDES `.nav{z-index:100}`. Both navbar
+   and .main then stacked at z-index:1, and since .main comes later in the
+   DOM it painted OVER the navbar's absolutely-positioned dropdowns: the
+   profile/notification menu items that hang below the navbar were covered
+   by main's cards and UNCLICKABLE (E2E: "card from main intercepts pointer
+   events").
+   `app-navbar` is a PLAIN global class in the JSX (not a module local), so
+   it must be wrapped in :global() to survive module hashing. Specificity
+   (0,2,1) beats the `> *` rule's (0,1,0) regardless of source order. */
+.rightSide > nav:global(.app-navbar) {
+  z-index: 100;
+}
+
 .main {
   flex: 1;
   min-height: 0; /* flex child must shrink — legacy App.css once forced 100vh-65px here and pushed the footer off-screen */

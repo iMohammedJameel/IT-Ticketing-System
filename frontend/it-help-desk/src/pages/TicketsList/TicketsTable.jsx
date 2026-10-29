@@ -7,7 +7,7 @@
 // ticket subject under the number when present.
 import styles from "./TicketsList.module.css";
 import { useI18n } from "../../i18n";
-import { formatDate } from "../../utils/format";
+import { formatDate, formatSlaCountdown } from "../../utils/format";
 import { Skeleton } from "../../components/common/Skeleton";
 import EmptyState from "../../components/common/EmptyState";
 import { getStatusInfo, getPriorityInfo } from "./ticketConstants";
@@ -15,6 +15,8 @@ import { getStatusInfo, getPriorityInfo } from "./ticketConstants";
 function TicketsTable({
   tickets,
   loading,
+  error,
+  onRetry,
   isStaff,
   selectedIds,
   onToggleSelect,
@@ -25,11 +27,23 @@ function TicketsTable({
   const { t, lang } = useI18n();
   const selected = selectedIds || new Set();
 
-  const slaOverdue = (ticket) =>
+  // FIX(QA-fix-selection): "select all" state is computed against the rows
+  // on THIS page, not by comparing sizes. Previously, if a user selected 5
+  // tickets on page 1 and page 2 also had 5 tickets, the header checkbox
+  // showed as fully checked even though NONE of page 2's rows were selected.
+  const allOnPageSelected =
+    tickets.length > 0 && tickets.every((tk) => selected.has(tk._id));
+  const someOnPageSelected =
+    tickets.some((tk) => selected.has(tk._id)) && !allOnPageSelected;
+
+  // SLA only counts while the ticket is ACTIVE — resolved/closed tickets
+  // keep their breached flag/badge but a live countdown is meaningless.
+  const slaActive = (ticket) =>
     ticket.slaDueDate &&
-    new Date(ticket.slaDueDate) < new Date() &&
     ticket.status !== "resolved" &&
     ticket.status !== "closed";
+  const slaOverdue = (ticket) =>
+    slaActive(ticket) && new Date(ticket.slaDueDate) < new Date();
 
   const openTicket = (ticket) => onOpenTicket(ticket);
 
@@ -45,7 +59,10 @@ function TicketsTable({
                 <th style={{ width: "40px" }}>
                   <input
                     type="checkbox"
-                    checked={selected.size === tickets.length && tickets.length > 0}
+                    checked={allOnPageSelected}
+                    ref={(el) => {
+                      if (el) el.indeterminate = someOnPageSelected;
+                    }}
                     onChange={onToggleSelectAll}
                     aria-label={t("tickets.selectAll")}
                   />
@@ -73,6 +90,25 @@ function TicketsTable({
                   </td>
                 </tr>
               ))
+            ) : error ? (
+              // FIX(QA-rec-2): a REAL error state with retry — previously a
+              // failed fetch rendered the identical "no tickets" empty state,
+              // misleading staff into thinking the queue was empty.
+              <tr>
+                <td colSpan={colCount} className="no-label">
+                  <EmptyState
+                    icon="fa-solid fa-triangle-exclamation"
+                    title={t("tickets.loadError")}
+                    description={error || t("tickets.loadErrorHint")}
+                    action={
+                      <button className="btn btn-outline-primary btn-sm" onClick={onRetry}>
+                        <i className="fa-solid fa-rotate-right me-1" aria-hidden="true"></i>
+                        {t("common.retry")}
+                      </button>
+                    }
+                  />
+                </td>
+              </tr>
             ) : tickets.length === 0 ? (
               <tr>
                 <td colSpan={colCount} className="no-label">
@@ -136,42 +172,68 @@ function TicketsTable({
                     <td data-label={t("tickets.product")}>{ticket.product}</td>
                     <td data-label={t("tickets.company")}>{ticket.company}</td>
                     <td data-label={t("tickets.priority")}>
+                      {/* QA-uiux (WCAG 1.4.3): badge text uses the `ink` shade
+                          (4.4–6.7:1 on the 15% tint) instead of the vivid base
+                          color, which measured 2.0–3.8:1. */}
                       <span
                         className={styles.priorityBadge}
                         style={{
                           backgroundColor: `color-mix(in srgb, ${priorityInfo.color} 15%, transparent)`,
-                          color: priorityInfo.color,
+                          color: priorityInfo.ink,
                           border: `1px solid color-mix(in srgb, ${priorityInfo.color} 45%, transparent)`,
                         }}
                       >
-                        {t(`status.${ticket.priority}`)}
+                        {t(`priority.${ticket.priority}`)}
                       </span>
                     </td>
                     <td data-label={t("tickets.status")}>
-                      <span className={styles.statusBadge} style={{ backgroundColor: statusInfo.color }}>
+                      {/* QA-uiux (WCAG 1.4.3): solid vivid bg + white text was
+                          1.7–3.8:1 across themes. Switched to the tinted-chip
+                          pattern (15% tint + theme-aware ink) used by the
+                          priority badge — one consistent badge language, and
+                          4.4–8.7:1 in both themes. */}
+                      <span
+                        className={styles.statusBadge}
+                        style={{
+                          backgroundColor: `color-mix(in srgb, ${statusInfo.color} 15%, transparent)`,
+                          color: statusInfo.ink,
+                          border: `1px solid color-mix(in srgb, ${statusInfo.color} 45%, transparent)`,
+                        }}
+                      >
                         <span className="visually-hidden">{t(`status.${ticket.status}`)}</span>
                         {t(`status.${ticket.status}`)}
                       </span>
                     </td>
                     <td data-label={t("tickets.tags")}>
-                      <div className="d-flex gap-1 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                      {/* QA-deep: badges used to WRAP vertically making rows
+                          unevenly tall. One fixed-height line now — the +N
+                          counter already communicates overflow, and the full
+                          list rides along in the title tooltip. */}
+                      <div
+                        className={styles.tagsCell}
+                        title={(ticket.tags || []).join(" · ") || undefined}
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         {(ticket.tags || []).slice(0, 3).map((tag) => (
-                          <span key={tag} className="badge bg-light text-dark border" style={{ fontSize: "0.7rem" }}>
-                            {tag}
-                          </span>
+                          <span key={tag} className={styles.tagChip}>{tag}</span>
                         ))}
                         {(ticket.tags || []).length > 3 && (
-                          <span className="badge bg-light text-muted border" style={{ fontSize: "0.7rem" }}>
+                          <span className={`${styles.tagChip} ${styles.tagChipMore}`}>
                             +{ticket.tags.length - 3}
                           </span>
                         )}
                       </div>
                     </td>
                     <td data-label={t("tickets.sla")}>
-                      {ticket.slaDueDate ? (
+                      {/* FIX(QA-rec-3): show the actual remaining/overdue time,
+                          not just a binary flag — agents can triage urgency
+                          without opening the ticket. */}
+                      {slaActive(ticket) ? (
                         <span className={overdue ? styles.slaOverdue : styles.slaOk}>
                           <i className="fa-solid fa-clock me-1" aria-hidden="true"></i>
-                          {overdue ? t("common.overdue") : t("common.onTrack")}
+                          {overdue
+                            ? formatSlaCountdown(ticket.slaDueDate, t("common.overdue"))
+                            : formatSlaCountdown(ticket.slaDueDate)}
                         </span>
                       ) : "—"}
                       {ticket.slaBreached && (

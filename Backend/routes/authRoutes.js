@@ -16,11 +16,14 @@ const {
   avatarUpload,
   updateProfile,
   getMe,
+} = require("../controller/authController");
+const {
   getAllUsers,
+  getStaffDirectory,
   toggleUserStatus,
   updateUserRole,
   deleteUser,
-} = require("../controller/authController");
+} = require("../controller/userManagementController");
 const { verifyPassword } = require("../controller/verifyController");
 const { refresh } = require("../controller/refreshTokenController");
 const { authMiddleware, allowedTo } = require("../middleware/authMiddleware");
@@ -50,6 +53,14 @@ module.exports = (authLimiter) => {
 
   // Admin-only user management
   router.get("/auth/users", authMiddleware, allowedTo("admin"), getAllUsers);
+  // Staff directory (admin + agent) — minimal fields for assignment dropdowns.
+  // FIX(QA-004..007): pages used to call /auth/users (admin-only) for agents → 403.
+  router.get(
+    "/auth/staff-directory",
+    authMiddleware,
+    allowedTo("admin", "agent"),
+    getStaffDirectory
+  );
   router.patch(
     "/auth/users/:userId/toggle-status",
     authMiddleware,
