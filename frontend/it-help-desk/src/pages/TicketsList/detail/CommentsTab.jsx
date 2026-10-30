@@ -148,6 +148,13 @@ const CommentsTab = ({ ticket, isStaff, activityKey = 0, onCountChange }) => {
             }
           }}
         />
+        {/* QA-td8: the Enter/Shift+Enter hint used to live INSIDE the
+            placeholder — a placeholder renders on ONE line and hard-clips,
+            which measured 54px (AR) / 169px (EN) wider than the mobile
+            composer. As a real text node it wraps naturally at every width. */}
+        <small className={`text-muted d-block mb-2 ${styles.commentHint}`}>
+          {t("tickets.commentHint")}
+        </small>
         <div className="d-flex justify-content-between align-items-center">
           {isStaff ? (
             <div className="form-check">

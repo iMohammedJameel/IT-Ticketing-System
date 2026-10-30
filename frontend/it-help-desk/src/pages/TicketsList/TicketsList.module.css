@@ -72,6 +72,57 @@
   overflow: hidden;
 }
 
+/* QA-td1 (ticket-detail padding): every card on the detail page wraps RAW
+   content (h2/p/dl/selects — not tables), and .card itself carries no
+   padding, so text and selects sat ~1px from the card border in BOTH
+   languages (glaring in RTL where the reading edge is the right border).
+   Other pages wrap tables/pagers that bring their own cell padding, which
+   is why only the detail cards need this. Rhythm matches .pageHeader. */
+.detailCard {
+  padding: 1rem 1.5rem;
+}
+
+/* QA-td2 (bidi): ticket descriptions and comments are free-text that can be
+   Arabic OR English regardless of the UI language. Without isolation an
+   English description inside the RTL page is right-aligned (reading
+   backwards edge) — same defect fixed earlier on .rowSubject/.ticketSubject.
+   plaintext picks the direction from the content itself. */
+.detailDescription {
+  white-space: pre-wrap;
+  unicode-bidi: plaintext;
+}
+
+/* QA-td4: on ≤576px the three activity tabs ("Comments (n) / History /
+   Attachments") wrapped onto a second row (nav ul measured 85px tall),
+   breaking the row alignment. Keep the tab strip on ONE line: nowrap +
+   horizontal scroll fallback (scrollbar hidden for cleanliness), with
+   tighter inline padding on small screens so all three labels fit. */
+.detailTabs {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.detailTabs::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 575.98px) {
+  /* nav-item/nav-link are GLOBAL Bootstrap classes — :global() keeps the
+     module compiler from hashing them into dead selectors. The extra
+     .nav-item hop out-specifies the global .nav-tabs .nav-link rules in
+     index.css (same 0,2,0 there — load order flip-flops). */
+  .detailTabs :global(.nav-item) :global(.nav-link) {
+    padding-inline: 0.65rem;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+  /* drop the "(n)" counts — all three labels then fit the card width */
+  .detailTabs :global(.nav-item) .tabCount {
+    display: none;
+  }
+}
+
 .card table {
   min-width: 750px;
 }
@@ -250,6 +301,9 @@
   margin: 4px 0 0;
   white-space: pre-wrap;
   word-wrap: break-word;
+  /* QA-td2: English comments in the Arabic UI (and vice versa) keep their
+     natural direction instead of being right-aligned by the RTL base. */
+  unicode-bidi: plaintext;
 }
 
 .commentInput {
@@ -543,6 +597,13 @@
   line-height: 1.8;
 }
 
+/* QA-td8: keyboard hint under the composer (was crammed into the
+   placeholder, where it hard-clipped on mobile). Subtle, wraps naturally. */
+.commentHint {
+  font-size: 0.7rem;
+  line-height: 1.6;
+}
+
 /* ===== Tickets table (BUG-qa6-22/23) =====
    Ticket-number column: th AND td share ONE class (same width hint on both)
    so the header can never drift from its data column, and the ID itself
@@ -598,9 +659,66 @@
 
 .thumbItem:hover img { transform: scale(1.06); }
 
+/* QA-td7: graceful attachment tiles — while the authenticated blob streams
+   in, and whenever a preview cannot be fetched, the grid shows a neutral tile
+   instead of the browser's broken-image glyph. */
+.thumbLoading {
+  position: relative;
+  overflow: hidden;
+}
+
+.thumbLoading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    color-mix(in srgb, var(--text-muted) 12%, transparent) 50%,
+    transparent 80%
+  );
+  animation: tdShimmer 1.2s infinite linear;
+}
+
+@keyframes tdShimmer {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
+.thumbFallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  text-align: center;
+  padding: 0.5rem;
+}
+
+.thumbFallback i {
+  font-size: 1.6rem;
+  opacity: 0.7;
+}
+
 /* Internal-note comments get a warning accent on the reading side */
 .commentInternal {
   border-inline-start: 3px solid var(--prio-medium);
+}
+
+/* QA-td5 (mobile cut): .commentsList/.historyList are fixed-height inner
+   scroll boxes (480/520px). On ≤768px the box boundary sliced the last
+   comment MID-LINE in full-page captures and made nested scrolling on a
+   phone awkward (inner scroll INSIDE the page scroll). Small screens get
+   natural flow — the page itself scrolls, nothing is ever cut mid-line.
+   Desktop keeps the bounded box so the composer stays in view. */
+@media (max-width: 768px) {
+  .commentsList,
+  .historyList {
+    max-height: none;
+    overflow-y: visible;
+  }
 }
 
 .commentsList { max-height: 480px; }

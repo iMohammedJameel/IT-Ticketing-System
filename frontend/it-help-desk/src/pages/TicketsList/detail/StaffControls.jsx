@@ -56,7 +56,7 @@ const StaffControls = ({ ticket, staffList = [], onlineStaff = [], onSaved }) =>
   };
 
   return (
-    <div className={`${styles.card} mb-3`}>
+    <div className={`${styles.card} ${styles.detailCard} mb-3`}>
       <h2 className={styles.detailSectionTitle}>{t("tickets.adminControls")}</h2>
       <div className="d-flex flex-column gap-2">
         <div>

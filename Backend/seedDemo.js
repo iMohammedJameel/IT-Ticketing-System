@@ -34,6 +34,7 @@
 
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
 
@@ -205,20 +206,34 @@ async function seedDemo() {
   // ---- attachment template files (write ONCE per run, shared) -------------
   // FIX(QA-seed-n4): files used to be named crypto.randomUUID() on EVERY
   // run — each re-seed orphaned the previous run's files in uploads/ and
-  // the directory grew without bound. Deterministic demo-* names are now
-  // overwritten in place (real user uploads still use random UUIDs, so
-  // there is no collision risk).
+  // the directory grew without bound. Deterministic names are now overwritten
+  // in place (real user uploads still use random UUIDs, so there is no
+  // collision risk).
+  // FIX(QA-td6): the deterministic names used the "demo-*" prefix, which the
+  // download endpoint's UUID whitelist REJECTS ("Invalid filename" 400) — so
+  // seeded attachments could never actually be fetched. A deterministic UUID
+  // (sha1 of the logical name, formatted as a UUID) keeps re-seeds idempotent
+  // AND passes the endpoint's whitelist. Legacy demo-* files are unlinked.
   const UPLOAD_DIR = require("./services/storageService").UPLOAD_DIR;
   if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+  const stableUuid = (logical) => {
+    const h = crypto.createHash("sha1").update(`jmlit-demo:${logical}`).digest("hex");
+    return [h.slice(0, 8), h.slice(8, 12), h.slice(12, 16), h.slice(16, 20), h.slice(20, 32)].join("-");
+  };
+  try {
+    for (const old of fs.readdirSync(UPLOAD_DIR)) {
+      if (old.startsWith("demo-")) fs.unlinkSync(path.join(UPLOAD_DIR, old));
+    }
+  } catch { /* best-effort cleanup of pre-QA-td6 files */ }
   const fileStore = {}; // logical name → {storedName, mimetype, size}
   for (const logical of ["error-screenshot.png", "receipt-sample.png"]) {
-    const storedName = `demo-${logical}`;
+    const storedName = `${stableUuid(logical)}.png`;
     const buf = makeGradientPng();
     fs.writeFileSync(path.join(UPLOAD_DIR, storedName), buf);
     fileStore[logical] = { storedName, mimetype: "image/png", size: buf.length };
   }
   const txtBuf = Buffer.from(TXT_ATTACHMENT_CONTENT, "utf8");
-  const txtStored = "demo-pos-error-log.txt";
+  const txtStored = `${stableUuid("pos-error-log.txt")}.txt`;
   fs.writeFileSync(path.join(UPLOAD_DIR, txtStored), txtBuf);
   fileStore["pos-error-log.txt"] = { storedName: txtStored, mimetype: "text/plain", size: txtBuf.length };
 

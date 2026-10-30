@@ -31,6 +31,19 @@ export const CsatWidget = ({ ticket, onRated }) => {
           ))}
         </div>
         <small className="text-muted">{t("tickets.alreadyRated")}</small>
+        {/* QA-td9: the requester's rating comment was collected but never
+            shown back — the already-rated state displayed stars with zero
+            context. Render the stored comment (dir=auto: AR/EN comments
+            both keep their natural direction). */}
+        {ticket.csat.comment ? (
+          <p
+            className="text-muted mt-2 mb-0"
+            dir="auto"
+            style={{ fontSize: "0.8rem", whiteSpace: "pre-wrap" }}
+          >
+            “{ticket.csat.comment}”
+          </p>
+        ) : null}
       </div>
     );
   }

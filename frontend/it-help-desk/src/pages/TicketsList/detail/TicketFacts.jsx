@@ -28,7 +28,7 @@ const TicketFacts = ({ ticket, onlineStaff = [] }) => {
   ];
 
   return (
-    <div className={`${styles.card} mb-3`}>
+    <div className={`${styles.card} ${styles.detailCard} mb-3`}>
       <h2 className={styles.detailSectionTitle}>{t("tickets.facts")}</h2>
       <dl className={styles.factList}>
         {/* One-line grid rows (label: auto | value: minmax(0,1fr)),

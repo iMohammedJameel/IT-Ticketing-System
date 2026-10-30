@@ -43,7 +43,12 @@ function TicketDetailView({
   const { t } = useI18n();
   const { joinTicket, leaveTicket, subscribeTicketActivity } = useNotifications();
 
-  const [tab, setTab] = useState("details");
+  // QA-td3: the initial state was "details" — an id that no longer exists in
+  // the tab list (comments/history/attachments), so on first render NO tab
+  // was active and the whole activity area below the tabs stayed empty until
+  // the user clicked one. Default to the conversation, which is the primary
+  // activity, so the page renders complete content immediately.
+  const [tab, setTab] = useState("comments");
   // Bumped by the ticket's WS room — CommentsTab refetches when it changes
   const [activityKey, setActivityKey] = useState(0);
   // Comment count lives inside CommentsTab; mirrored here for the tab badge
@@ -92,10 +97,15 @@ function TicketDetailView({
   const slaLeft = formatSlaCountdown(ticket.slaDueDate, t("common.overdue"));
   const slaActive = !["resolved", "closed"].includes(ticket.status);
 
+  // QA-td4: counts render as a separate span so ≤576px can drop them —
+  // "Comments (3) / History / Attachments" otherwise needs ~63px more than
+  // the mobile card offers and the strip starts scrolling.
+  const countLabel = (n) => (n ? <span className={styles.tabCount}> ({n})</span> : null);
+
   const tabs = [
-    { id: "comments", label: `${t("tickets.comments")}${commentCount ? ` (${commentCount})` : ""}` },
+    { id: "comments", label: <>{t("tickets.comments")}{countLabel(commentCount)}</> },
     { id: "history", label: t("tickets.history") },
-    { id: "attachments", label: `${t("tickets.attachmentsTab")}${ticket.attachments?.length ? ` (${ticket.attachments.length})` : ""}` },
+    { id: "attachments", label: <>{t("tickets.attachmentsTab")}{countLabel(ticket.attachments?.length)}</> },
   ];
 
   return (
@@ -149,17 +159,16 @@ function TicketDetailView({
       <div className="row g-4">
         {/* ── Left column: description + activity tabs ── */}
         <div className="col-12 col-lg-8">
-          <div className={`${styles.card} h-100`}>
+          <div className={`${styles.card} ${styles.detailCard} h-100`}>
             {/* Description always visible */}
             <div className="mb-3">
               <h2 className={styles.detailSectionTitle}>{t("tickets.problemDescription")}</h2>
-              <p className="text-muted mt-2" style={{ whiteSpace: "pre-wrap" }}>
-                {ticket.description}
-              </p>
+              {/* QA-td2: direction picked from the content itself (see CSS) */}
+              <p className={`${styles.detailDescription} text-muted mt-2`}>{ticket.description}</p>
             </div>
 
-            {/* Tabs */}
-            <ul className="nav nav-tabs mb-3" role="tablist">
+            {/* Tabs — QA-td4: one row at every size (see .detailTabs in CSS) */}
+            <ul className={`nav nav-tabs mb-3 ${styles.detailTabs}`} role="tablist">
               {tabs.map((tb) => (
                 <li className="nav-item" key={tb.id}>
                   <button
@@ -198,14 +207,14 @@ function TicketDetailView({
 
           {/* CSAT — requester only, after resolution */}
           {rateable && (
-            <div className={`${styles.card} mb-3`}>
+            <div className={`${styles.card} ${styles.detailCard} mb-3`}>
               <CsatWidgetBase ticket={ticket} onRated={() => onSaved?.()} />
             </div>
           )}
 
           {/* Requester close-the-loop CTA */}
           {canClose && (
-            <div className={`${styles.card} mb-3 text-center`}>
+            <div className={`${styles.card} ${styles.detailCard} mb-3 text-center`}>
               <p className="text-muted mb-2" style={{ fontSize: "0.85rem" }}>
                 {t("tickets.closePrompt")}
               </p>
